@@ -16,7 +16,7 @@ app.listen(PORT, () => {
 
 //PRINCIPAL
 app.get("/", (request, response) =>{
-    response.send("Página principal (index)");
+    response.send("Página principal (index)"); 
 });
 
 //OFERTAS
