@@ -88,21 +88,6 @@ app.get("/videojuegos/consola/:nombreConsola", (request, response) => {
   response.send(`Videojuegos disponibles para ${JSON.stringify(request.params)}`);
 });
 
-//--------------RUTAS PARA PELÍCULAS---------------- 
-
-app.get("/peliculas/", (request, response) => {
-  response.send(`Lista de peliculas ${JSON.stringify(request.params)}`);
-});
-
-//Filtrar películas por género
-app.get("/peliculas/genero/:genero", (request, response) => {
-  response.send(`Películas filtradas por género ${JSON.stringify(request.params)}`);
-});
-
-//Filtrar películas por nombre
-app.get("/peliculas/nombre/:nombre", (request, response) => {
-  response.send(`Películas filtradas por nombre ${JSON.stringify(request.params)}`);
-});
 
 //--------------RUTAS PARA MERCHANDISING---------------- 
 
