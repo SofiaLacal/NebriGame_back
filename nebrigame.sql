@@ -16,7 +16,8 @@ CREATE TABLE metodo_pago(
     tipo VARCHAR(50) NOT NULL,
     detalles VARCHAR(255) NOT NULL,
     usuario_id INT,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    INDEX idx_metodo_pago_usuario (usuario_id)
 );
 
 
@@ -32,8 +33,12 @@ CREATE TABLE productos (
     descripcion TEXT,
     stock INT NOT NULL DEFAULT 0,
     tipo ENUM('merchandising', 'juego', 'consola') NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- Constraint para asegurar que solo existe una relación especializada
-    CONSTRAINT chk_tipo_producto CHECK (tipo IN ('merchandising', 'juego', 'consola'))
+    CONSTRAINT chk_tipo_producto CHECK (tipo IN ('merchandising', 'juego', 'consola')),
+    INDEX idx_productos_tipo (tipo),
+    INDEX idx_productos_precio (precio),
+    INDEX idx_productos_nombre (nombre)
 );
 
 -- Tabla para productos de merchandising
@@ -50,7 +55,9 @@ CREATE TABLE juegos (
     edad_minima INT,
     plataforma_id INT,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
-    FOREIGN KEY (plataforma_id) REFERENCES plataforma(id)
+    FOREIGN KEY (plataforma_id) REFERENCES plataforma(id),
+    INDEX idx_juegos_plataforma (plataforma_id),
+    INDEX idx_juegos_genero (genero)
 );
 
 -- Tabla para consolas
@@ -62,7 +69,68 @@ CREATE TABLE consolas (
     fabricante VARCHAR(100),
     plataforma_id INT,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
-    FOREIGN KEY (plataforma_id) REFERENCES plataforma(id)
+    FOREIGN KEY (plataforma_id) REFERENCES plataforma(id),
+    INDEX idx_consolas_plataforma (plataforma_id),
+    INDEX idx_consolas_fabricante (fabricante)
+);
+
+-- Tabla para carrito de compras
+CREATE TABLE carrito (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    cantidad INT NOT NULL DEFAULT 1,
+    fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_carrito_usuario_producto (usuario_id, producto_id),
+    INDEX idx_carrito_usuario (usuario_id),
+    INDEX idx_carrito_producto (producto_id)
+);
+
+-- Tabla para wishlist (lista de deseos)
+CREATE TABLE wishlist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_wishlist_usuario_producto (usuario_id, producto_id),
+    INDEX idx_wishlist_usuario (usuario_id),
+    INDEX idx_wishlist_producto (producto_id)
+);
+
+-- Tabla para pedidos (órdenes de compra)
+CREATE TABLE pedidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT,
+    metodo_pago_id INT,
+    total DECIMAL(10, 2) NOT NULL,
+    estado ENUM('pendiente', 'procesando', 'enviado', 'entregado', 'cancelado') NOT NULL DEFAULT 'pendiente',
+    fecha_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    direccion_envio VARCHAR(255),
+    telefono_contacto VARCHAR(20),
+    notas TEXT,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (metodo_pago_id) REFERENCES metodo_pago(id) ON DELETE SET NULL,
+    INDEX idx_pedidos_usuario (usuario_id),
+    INDEX idx_pedidos_estado (estado),
+    INDEX idx_pedidos_fecha (fecha_pedido)
+);
+
+-- Tabla para productos de cada pedido (relación muchos a muchos)
+CREATE TABLE pedidos_productos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pedido_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    cantidad INT NOT NULL DEFAULT 1,
+    precio_unitario DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
+    INDEX idx_pedidos_productos_pedido (pedido_id),
+    INDEX idx_pedidos_productos_producto (producto_id)
 );
 
 -- Trigger para asegurar la exclusividad: un producto solo puede estar en una tabla especializada
