@@ -1,3 +1,5 @@
+DROP DATABASE IF EXISTS nebrigame;
+
 CREATE DATABASE nebrigame;
 USE nebrigame;
 
