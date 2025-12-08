@@ -1,23 +1,35 @@
 const consolas = [
   {
-    id: 1,
-    tipo: 'consola',
-    nombre: 'PlayStation 5',
-    descripcion: 'Consola Sony de última generación',
-    precio: 499.99,
-    stock: 8,
-    plataforma: 'PlayStation',
-    fabricante: 'Sony'
+    id: 7,
+    nombre: "PlayStation 5 Standard",
+    almacenamiento: "825GB SSD",
+    color: "Blanco y Negro",
+    marca: "Sony",
+    categoria_id: 1
   },
   {
-    id: 2,
-    tipo: 'consola',
-    nombre: 'Xbox Series X',
-    descripcion: 'Consola Microsoft de alto rendimiento',
-    precio: 499.99,
-    stock: 6,
-    plataforma: 'Xbox',
-    fabricante: 'Microsoft'
+    id: 8,
+    nombre: "Xbox Series X",
+    almacenamiento: "1TB SSD",
+    color: "Negro",
+    marca: "Microsoft",
+    categoria_id: 2
+  },
+  {
+    id: 9,
+    nombre: "Nintendo Switch OLED",
+    almacenamiento: "64GB",
+    color: "Blanco",
+    marca: "Nintendo",
+    categoria_id: 3
+  },
+  {
+    id: 10,
+    nombre: "PlayStation 5 Digital",
+    almacenamiento: "825GB SSD",
+    color: "Blanco y Negro",
+    marca: "Sony",
+    categoria_id: 1
   }
 ];
 
