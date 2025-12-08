@@ -1,6 +1,6 @@
-const videojuegosData = require('../data/videojuegos-data');
+const videojuegosData = require('../data/videojuegos-data.json');
 const consolasData = require('../data/consolas-data.json');
-const merchandisingData = require('../data/merchandising-data');
+const merchandisingData = require('../data/merchandising-data.json');
 
 // Servicio para combinar todos los productos
 class ProductoService {
@@ -13,7 +13,7 @@ class ProductoService {
         let idCounter = 1;
 
         // Agregar videojuegos (IDs 1-6)
-        videojuegosData.forEach((juego, index) => {
+        videojuegosData.videojuegos.forEach((juego, index) => {
             productos.push({
                 id: idCounter++,
                 nombre: juego.nombre,
@@ -43,7 +43,7 @@ class ProductoService {
         });
 
         // Agregar merchandising (IDs 11-16)
-        merchandisingData.forEach((merch) => {
+        merchandisingData.merchandising.forEach((merch) => {
             productos.push({
                 id: merch.id,
                 nombre: merch.nombre,
