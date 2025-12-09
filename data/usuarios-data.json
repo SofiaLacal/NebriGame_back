@@ -6,7 +6,7 @@
       "apellido2": "López",
       "DNI": "12345678A",
       "email": "juan.garcia@email.com",
-      "contrasenna": "$2b$10$ejemploHashPassword123"
+      "password": "$2b$10$ejemploHashPassword123"
     },
     {
       "nombre": "María",
@@ -14,7 +14,7 @@
       "apellido2": "Sánchez",
       "DNI": "23456789B",
       "email": "maria.martinez@email.com",
-      "contrasenna": "$2b$10$ejemploHashPassword456"
+      "password": "$2b$10$ejemploHashPassword456"
     },
     {
       "nombre": "Carlos",
@@ -22,7 +22,7 @@
       "apellido2": null,
       "DNI": "34567890C",
       "email": "carlos.rodriguez@email.com",
-      "contrasenna": "$2b$10$ejemploHashPassword789"
+      "password": "$2b$10$ejemploHashPassword789"
     },
     {
       "nombre": "Ana",
@@ -30,7 +30,7 @@
       "apellido2": "González",
       "DNI": "45678901D",
       "email": "ana.fernandez@email.com",
-      "contrasenna": "$2b$10$ejemploHashPassword012"
+      "password": "$2b$10$ejemploHashPassword012"
     },
     {
       "nombre": "Luis",
@@ -38,7 +38,7 @@
       "apellido2": "Torres",
       "DNI": "56789012E",
       "email": "luis.perez@email.com",
-      "contrasenna": "$2b$10$ejemploHashPassword345"
+      "password": "$2b$10$ejemploHashPassword345"
     }
   ]
 }

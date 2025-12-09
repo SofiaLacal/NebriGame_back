@@ -9,16 +9,21 @@ const merchandisingData = require("../data/merchandising-data.json");
 
 let usuarios = usuariosData.usuarios;
 
-// Unificar todos los productos (videojuegos + consolas + merchandising)
+// Unificamos todos los productos (videojuegos + consolas + merchandising)
 const productos = [
   ...videojuegosData.videojuegos,
   ...consolasData.consolas,
   ...merchandisingData.merchandising
 ];
 
+// ---------------- TODOS LOS USUARIOS ----------------
+router.get("/", (req, res) => {
+  res.json(usuarios);
+});
+
 // ---------------- LOGIN ----------------
 router.post("/login", (req, res) => {
-  console.log("POST /usuario/login");
+  console.log("POST /usuarios/login");
   console.log(req.body);
 
   const { email, password } = req.body;
@@ -41,7 +46,7 @@ router.post("/login", (req, res) => {
 
 // ---------------- REGISTRO ----------------
 router.post("/registro", (req, res) => {
-  console.log("POST /usuario/registro");
+  console.log("POST /usuarios/registro");
   console.log(req.body);
 
   const nuevoUsuario = {
@@ -66,7 +71,7 @@ router.post("/registro", (req, res) => {
 // ---------------- PERFIL ----------------
 router.get("/:userId", (req, res) => {
   const userId = parseInt(req.params.userId);
-  console.log(`GET /usuario/${userId}`);
+  console.log(`GET /usuarios/${userId}`);
 
   const usuario = usuarios.find(u => u.id === userId);
 
@@ -82,7 +87,7 @@ router.get("/:userId", (req, res) => {
 // ---------------- ACTUALIZAR PERFIL ----------------
 router.put("/:userId", (req, res) => {
   const userId = parseInt(req.params.userId);
-  console.log(`PUT /usuario/${userId}`);
+  console.log(`PUT /usuarios/${userId}`);
   console.log(req.body);
 
   const index = usuarios.findIndex(u => u.id === userId);

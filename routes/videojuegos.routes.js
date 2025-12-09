@@ -16,6 +16,9 @@ router.get("/", (req, res) => {
 });
 
 // ---------------- DETALLES POR NOMBRE ----------------
+
+//http://localhost:4004/buscar?q=zelda
+
 router.get("/:nombre", (req, res) => {
   const nombre = req.params.nombre.toLowerCase();
   console.log(`GET /videojuegos/${nombre}`);
@@ -68,12 +71,12 @@ router.get("/consola/:nombreConsola", (req, res) => {
 });
 
 // ---------------- FILTRAR POR EDAD MÍNIMA ----------------
-router.get("/edad/:edadMinima", (req, res) => {
-  const edadMinima = parseInt(req.params.edadMinima);
+router.get("/edad/:pegi", (req, res) => {
+  const edadMinima = parseInt(req.params.pegi);
   console.log(`GET /videojuegos/edad/${edadMinima}`);
 
   const resultado = videojuegos.filter(
-    v => v.edadMinima && v.edadMinima <= edadMinima
+    v => v.pegi && v.pegi <= edadMinima
   );
 
   res.json({
