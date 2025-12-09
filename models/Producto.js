@@ -1,4 +1,4 @@
-const videojuegosData = require('../data/videojuegos-data.json');
+/* const videojuegosData = require('../data/videojuegos-data.json');
 const consolasData = require('../data/consolas-data.json');
 const merchandisingData = require('../data/merchandising-data.json');
 
@@ -137,3 +137,4 @@ const productoService = new ProductoService();
 
 module.exports = productoService;
 
+ */
