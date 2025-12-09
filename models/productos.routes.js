@@ -1,4 +1,4 @@
-const express = require("express");
+/* const express = require("express");
 const router = express.Router();
 const Producto = require("../models/Producto");
 
@@ -120,3 +120,4 @@ router.get("/precio", async (request, response) => {
 
 module.exports = router;
 
+ */

@@ -52,15 +52,15 @@ app.use(express.json());
 const PORT = 4004;
 
 // -------- IMPORTAR RUTAS --------
-const generalRoutes = require("./general.routes");
-const usuarioRoutes = require("./usuario.routes");
-const videojuegosRoutes = require("./videojuegos.routes");
-const consolasRoutes = require("./consolas.routes");
-const merchandisingRoutes = require("./merchandising.routes");
-const productosRoutes = require("./productos.routes");
-const plataformasRoutes = require("./plataformas.routes");
-const busquedaRoutes = require("./busqueda.routes");
-const adminRoutes = require("./admin.routes");
+const generalRoutes = require("./routes/general.routes");
+const usuarioRoutes = require("./routes/usuario.routes");
+const videojuegosRoutes = require("./routes/videojuegos.routes");
+const consolasRoutes = require("./routes/consolas.routes");
+const merchandisingRoutes = require("./routes/merchandising.routes");
+const productosRoutes = require("./routes/productos.routes");
+const plataformasRoutes = require("./routes/plataformas.routes");
+const busquedaRoutes = require("./routes/busqueda.routes");
+const adminRoutes = require("./routes/admin.routes");
 
 // -------- USAR RUTAS --------
 app.use("/", generalRoutes);
