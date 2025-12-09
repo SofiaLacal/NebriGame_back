@@ -107,7 +107,7 @@ const express = require("express");
 const router = express.Router();
 
 // ---------------- IMPORTAR DATOS ----------------
-const usuariosData = require("../data/usuarios.json");
+const usuariosData = require("../data/usuarios-data.json");
 const productosData = require("../data/productos.json");
 
 let usuarios = usuariosData.usuarios;

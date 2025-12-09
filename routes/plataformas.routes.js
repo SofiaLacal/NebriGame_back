@@ -17,7 +17,7 @@ const express = require("express");
 const router = express.Router();
 
 // ---------------- IMPORTAR DATOS ----------------
-const plataformasData = require("../data/plataformas.json");
+const plataformasData = require("../data/plataformas-data.json");
 const plataformas = plataformasData.plataformas;
 
 // ---------------- LISTA DE PLATAFORMAS ----------------

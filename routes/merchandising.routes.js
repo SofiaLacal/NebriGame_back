@@ -22,7 +22,7 @@ const express = require("express");
 const router = express.Router();
 
 // ---------------- IMPORTAR DATOS ----------------
-const merchandisingData = require("../data/merchandising.json");
+const merchandisingData = require("../data/merchandising-data.json");
 const merchandising = merchandisingData.merchandising;
 
 // ---------------- LISTA DE MERCHANDISING ----------------

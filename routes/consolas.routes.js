@@ -28,7 +28,7 @@ module.exports = router; */
 const express = require("express");
 const router = express.Router();
 
-const consolasData = require("../data/consolas.json");
+const consolasData = require("../data/consolas-data.json");
 const consolas = consolasData.consolas;
 
 // Lista de consolas

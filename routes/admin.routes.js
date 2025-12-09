@@ -38,9 +38,9 @@ const express = require("express");
 const router = express.Router();
 
 // ---------------- IMPORTAR DATOS ----------------
-const videojuegosData = require("../data/videojuegos.json");
-const consolasData = require("../data/consolas.json");
-const merchandisingData = require("../data/merchandising.json");
+const videojuegosData = require("../data/videojuegos-data.json");
+const consolasData = require("../data/consolas-data.json");
+const merchandisingData = require("../data/merchandising-data.json");
 
 const videojuegos = videojuegosData.videojuegos;
 const consolas = consolasData.consolas;
