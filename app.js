@@ -34,5 +34,5 @@ app.use("/admin", adminRoutes);
 
 // -------- INICIAR SERVIDOR --------
 app.listen(PORT, () => {
-  console.log(`NebriGame API corriendo en el puerto ${PORT}`);
+  console.log(`NebriGame funcionando en el puerto ${PORT}`);
 });
