@@ -22,11 +22,11 @@ CREATE TABLE metodo_pago(
     INDEX idx_metodo_pago_usuario (usuario_id)
 );
 
-
 CREATE TABLE plataforma(
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL
 );
+
 -- Tabla base de productos
 CREATE TABLE productos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -36,33 +36,29 @@ CREATE TABLE productos (
     stock INT NOT NULL DEFAULT 0,
     tipo ENUM('merchandising', 'juego', 'consola') NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- Constraint para asegurar que solo existe una relación especializada
     CONSTRAINT chk_tipo_producto CHECK (tipo IN ('merchandising', 'juego', 'consola')),
     INDEX idx_productos_tipo (tipo),
     INDEX idx_productos_precio (precio),
     INDEX idx_productos_nombre (nombre)
 );
 
--- Tabla para productos de merchandising
+-- Tabla de merchandising
 CREATE TABLE merchandising (
     producto_id INT PRIMARY KEY,
     categoria VARCHAR(50),
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
 );
 
--- Tabla para juegos
+-- Tabla de juegos (SIN plataforma_id)
 CREATE TABLE juegos (
     producto_id INT PRIMARY KEY,
     genero VARCHAR(50),
     edad_minima INT,
-    plataforma_id INT,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
-    FOREIGN KEY (plataforma_id) REFERENCES plataforma(id),
-    INDEX idx_juegos_plataforma (plataforma_id),
     INDEX idx_juegos_genero (genero)
 );
 
--- Tabla para consolas
+-- Tabla de consolas
 CREATE TABLE consolas (
     producto_id INT PRIMARY KEY,
     nombre VARCHAR(100),
@@ -76,7 +72,16 @@ CREATE TABLE consolas (
     INDEX idx_consolas_fabricante (fabricante)
 );
 
--- Tabla para carrito de compras
+-- Nueva tabla N:M para juegos-plataformas
+CREATE TABLE juegos_plataformas (
+    juego_id INT NOT NULL,
+    plataforma_id INT NOT NULL,
+    PRIMARY KEY (juego_id, plataforma_id),
+    FOREIGN KEY (juego_id) REFERENCES juegos(producto_id) ON DELETE CASCADE,
+    FOREIGN KEY (plataforma_id) REFERENCES plataforma(id) ON DELETE CASCADE
+);
+
+-- Carrito
 CREATE TABLE carrito (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
@@ -90,7 +95,7 @@ CREATE TABLE carrito (
     INDEX idx_carrito_producto (producto_id)
 );
 
--- Tabla para wishlist (lista de deseos)
+-- Wishlist
 CREATE TABLE wishlist (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
@@ -103,13 +108,13 @@ CREATE TABLE wishlist (
     INDEX idx_wishlist_producto (producto_id)
 );
 
--- Tabla para pedidos (órdenes de compra)
+-- Pedidos
 CREATE TABLE pedidos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT,
     metodo_pago_id INT,
     total DECIMAL(10, 2) NOT NULL,
-    estado ENUM('pendiente', 'procesando', 'enviado', 'entregado', 'cancelado') NOT NULL DEFAULT 'pendiente',
+    estado ENUM('pendiente','procesando','enviado','entregado','cancelado') NOT NULL DEFAULT 'pendiente',
     fecha_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     direccion_envio VARCHAR(255),
     telefono_contacto VARCHAR(20),
@@ -121,7 +126,7 @@ CREATE TABLE pedidos (
     INDEX idx_pedidos_fecha (fecha_pedido)
 );
 
--- Tabla para productos de cada pedido (relación muchos a muchos)
+-- Productos de pedidos
 CREATE TABLE pedidos_productos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     pedido_id INT NOT NULL,
@@ -135,55 +140,3 @@ CREATE TABLE pedidos_productos (
     INDEX idx_pedidos_productos_producto (producto_id)
 );
 
--- Trigger para asegurar la exclusividad: un producto solo puede estar en una tabla especializada
-DELIMITER $$
-
-CREATE TRIGGER trg_check_merchandising_tipo
-BEFORE INSERT ON merchandising
-FOR EACH ROW
-BEGIN
-    IF (SELECT tipo FROM productos WHERE id = NEW.producto_id) != 'merchandising' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto debe ser de tipo merchandising';
-    END IF;
-    -- Verificar que no existe en otras tablas especializadas
-    IF EXISTS (SELECT 1 FROM juegos WHERE producto_id = NEW.producto_id) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto ya existe como juego';
-    END IF;
-    IF EXISTS (SELECT 1 FROM consolas WHERE producto_id = NEW.producto_id) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto ya existe como consola';
-    END IF;
-END$$
-
-CREATE TRIGGER trg_check_juego_tipo
-BEFORE INSERT ON juegos
-FOR EACH ROW
-BEGIN
-    IF (SELECT tipo FROM productos WHERE id = NEW.producto_id) != 'juego' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto debe ser de tipo juego';
-    END IF;
-    -- Verificar que no existe en otras tablas especializadas
-    IF EXISTS (SELECT 1 FROM merchandising WHERE producto_id = NEW.producto_id) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto ya existe como merchandising';
-    END IF;
-    IF EXISTS (SELECT 1 FROM consolas WHERE producto_id = NEW.producto_id) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto ya existe como consola';
-    END IF;
-END$$
-
-CREATE TRIGGER trg_check_consola_tipo
-BEFORE INSERT ON consolas
-FOR EACH ROW
-BEGIN
-    IF (SELECT tipo FROM productos WHERE id = NEW.producto_id) != 'consola' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto debe ser de tipo consola';
-    END IF;
-    -- Verificar que no existe en otras tablas especializadas
-    IF EXISTS (SELECT 1 FROM merchandising WHERE producto_id = NEW.producto_id) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto ya existe como merchandising';
-    END IF;
-    IF EXISTS (SELECT 1 FROM juegos WHERE producto_id = NEW.producto_id) THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El producto ya existe como juego';
-    END IF;
-END$$
-
-DELIMITER ;
