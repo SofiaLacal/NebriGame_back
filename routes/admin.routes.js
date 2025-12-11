@@ -1,153 +1,183 @@
 const express = require("express");
 const router = express.Router();
+const { Producto, Juego, Consola, Merchandising } = require("../models");
 
-// ---------------- IMPORTAR DATOS ----------------
-const videojuegosData = require("../data/videojuegos-data.json");
-const consolasData = require("../data/consolas-data.json");
-const merchandisingData = require("../data/merchandising-data.json");
+// ---------------- CREAR PRODUCTO GENÉRICO ----------------
+router.post("/productos", async (req, res) => {
+    try {
+        const nuevoProducto = await Producto.create(req.body);
 
-const videojuegos = videojuegosData.videojuegos;
-const consolas = consolasData.consolas;
-const merchandising = merchandisingData.merchandising;
-
-// Unificamos todos los productos para el panel admin
-let productos = [
-  ...videojuegos,
-  ...consolas,
-  ...merchandising
-];
-
-// ---------------- CREAR PRODUCTO (GENÉRICO) ----------------
-router.post("/productos", (req, res) => {
-  console.log("ADMIN → Crear producto");
-  console.log(req.body);
-
-  const nuevoProducto = {
-    id: productos.length + 1,
-    ...req.body
-  };
-
-  productos.push(nuevoProducto);
-
-  console.log("Producto creado:", nuevoProducto);
-
-  res.status(201).json({
-    mensaje: "Producto creado correctamente",
-    producto: nuevoProducto
-  });
+        res.status(201).json({
+            success: true,
+            mensaje: "Producto creado correctamente",
+            producto: nuevoProducto
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al crear producto",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- ACTUALIZAR PRODUCTO ----------------
-router.put("/productos/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  console.log(`ADMIN → Actualizar producto ID ${id}`);
-  console.log(req.body);
+router.put("/productos/:id", async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const producto = await Producto.findByPk(id);
 
-  const index = productos.findIndex(p => p.id === id);
+        if (!producto) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado"
+            });
+        }
 
-  if (index === -1) {
-    return res.status(404).json({
-      error: "Producto no encontrado"
-    });
-  }
+        await producto.update(req.body);
 
-  productos[index] = {
-    ...productos[index],
-    ...req.body
-  };
-
-  console.log("Producto actualizado:", productos[index]);
-
-  res.json({
-    mensaje: "Producto actualizado correctamente",
-    producto: productos[index]
-  });
+        res.json({
+            success: true,
+            mensaje: "Producto actualizado correctamente",
+            producto
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al actualizar producto",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- ELIMINAR PRODUCTO ----------------
-router.delete("/productos/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  console.log(`ADMIN → Eliminar producto ID ${id}`);
+router.delete("/productos/:id", async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const producto = await Producto.findByPk(id);
 
-  const index = productos.findIndex(p => p.id === id);
+        if (!producto) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado"
+            });
+        }
 
-  if (index === -1) {
-    return res.status(404).json({
-      error: "Producto no encontrado"
-    });
-  }
+        await producto.destroy();
 
-  const eliminado = productos.splice(index, 1);
-
-  console.log("Producto eliminado:", eliminado[0]);
-
-  res.json({
-    mensaje: "Producto eliminado correctamente",
-    producto: eliminado[0]
-  });
+        res.json({
+            success: true,
+            mensaje: "Producto eliminado correctamente"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al eliminar producto",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- CREAR VIDEOJUEGO ----------------
-router.post("/juegos", (req, res) => {
-  console.log("ADMIN → Crear videojuego");
-  console.log(req.body);
+router.post("/juegos", async (req, res) => {
+    try {
+        const { genero, edad_minima, plataforma_id, ...productoData } = req.body;
 
-  const nuevoJuego = {
-    id: productos.length + 1,
-    tipo: "videojuego",
-    ...req.body
-  };
+        // Crear producto base
+        const nuevoProducto = await Producto.create({
+            ...productoData,
+            tipo: 'juego'
+        });
 
-  productos.push(nuevoJuego);
+        // Crear datos específicos del juego
+        const nuevoJuego = await Juego.create({
+            producto_id: nuevoProducto.id,
+            genero,
+            edad_minima,
+            plataforma_id
+        });
 
-  console.log("Videojuego creado:", nuevoJuego);
-
-  res.status(201).json({
-    mensaje: "Videojuego creado correctamente",
-    videojuego: nuevoJuego
-  });
+        res.status(201).json({
+            success: true,
+            mensaje: "Videojuego creado correctamente",
+            producto: nuevoProducto,
+            juego: nuevoJuego
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al crear videojuego",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- CREAR CONSOLA ----------------
-router.post("/consolas", (req, res) => {
-  console.log("ADMIN → Crear consola");
-  console.log(req.body);
+router.post("/consolas", async (req, res) => {
+    try {
+        const { capacidad_almacenamiento, color, fabricante, plataforma_id, ...productoData } = req.body;
 
-  const nuevaConsola = {
-    id: productos.length + 1,
-    tipo: "consola",
-    ...req.body
-  };
+        // Crear producto base
+        const nuevoProducto = await Producto.create({
+            ...productoData,
+            tipo: 'consola'
+        });
 
-  productos.push(nuevaConsola);
+        // Crear datos específicos de la consola
+        const nuevaConsola = await Consola.create({
+            producto_id: nuevoProducto.id,
+            nombre: productoData.nombre,
+            capacidad_almacenamiento,
+            color,
+            fabricante,
+            plataforma_id
+        });
 
-  console.log("Consola creada:", nuevaConsola);
-
-  res.status(201).json({
-    mensaje: "Consola creada correctamente",
-    consola: nuevaConsola
-  });
+        res.status(201).json({
+            success: true,
+            mensaje: "Consola creada correctamente",
+            producto: nuevoProducto,
+            consola: nuevaConsola
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al crear consola",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- CREAR MERCHANDISING ----------------
-router.post("/merchandising", (req, res) => {
-  console.log("ADMIN → Crear merchandising");
-  console.log(req.body);
+router.post("/merchandising", async (req, res) => {
+    try {
+        const { categoria, ...productoData } = req.body;
 
-  const nuevoMerchandising = {
-    id: productos.length + 1,
-    tipo: "merchandising",
-    ...req.body
-  };
+        // Crear producto base
+        const nuevoProducto = await Producto.create({
+            ...productoData,
+            tipo: 'merchandising'
+        });
 
-  productos.push(nuevoMerchandising);
+        // Crear datos específicos del merchandising
+        const nuevoMerchandising = await Merchandising.create({
+            producto_id: nuevoProducto.id,
+            categoria
+        });
 
-  console.log("Merchandising creado:", nuevoMerchandising);
-
-  res.status(201).json({
-    mensaje: "Producto de merchandising creado correctamente",
-    merchandising: nuevoMerchandising
-  });
+        res.status(201).json({
+            success: true,
+            mensaje: "Producto de merchandising creado correctamente",
+            producto: nuevoProducto,
+            merchandising: nuevoMerchandising
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al crear merchandising",
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;

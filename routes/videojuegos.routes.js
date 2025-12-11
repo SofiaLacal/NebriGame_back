@@ -1,89 +1,170 @@
 const express = require("express");
 const router = express.Router();
-
-// ---------------- IMPORTAR DATOS ----------------
-const videojuegosData = require("../data/videojuegos-data.json");
-const videojuegos = videojuegosData.videojuegos;
+const { Producto, Juego, Plataforma } = require("../models");
+const { Op } = require("sequelize");
 
 // ---------------- LISTA DE VIDEOJUEGOS ----------------
-router.get("/", (req, res) => {
-  console.log("GET /videojuegos - lista completa");
+router.get("/", async (req, res) => {
+    try {
+        const juegos = await Producto.findAll({
+            where: { tipo: 'juego' },
+            include: [{
+                model: Juego,
+                include: [Plataforma]
+            }]
+        });
 
-  res.json({
-    total: videojuegos.length,
-    videojuegos
-  });
+        res.json({
+            success: true,
+            total: juegos.length,
+            videojuegos: juegos
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener videojuegos",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- DETALLES POR NOMBRE ----------------
+router.get("/:nombre", async (req, res) => {
+    try {
+        const nombre = req.params.nombre.replace(/-/g, " ");
+        
+        const videojuego = await Producto.findOne({
+            where: { 
+                tipo: 'juego',
+                nombre: {
+                    [Op.like]: `%${nombre}%`
+                }
+            },
+            include: [{
+                model: Juego,
+                include: [Plataforma]
+            }]
+        });
 
-//http://localhost:4004/buscar?q=zelda
+        if (!videojuego) {
+            return res.status(404).json({
+                success: false,
+                error: "Videojuego no encontrado"
+            });
+        }
 
-router.get("/:nombre", (req, res) => {
-  const nombre = req.params.nombre.toLowerCase();
-  console.log(`GET /videojuegos/${nombre}`);
-
-  const videojuego = videojuegos.find(
-    v => v.nombre.toLowerCase().replace(/\s+/g, "-") === nombre
-  );
-
-  if (!videojuego) {
-    return res.status(404).json({
-      error: "Videojuego no encontrado"
-    });
-  }
-
-  res.json(videojuego);
+        res.json({
+            success: true,
+            videojuego
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener videojuego",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- FILTRAR POR GÉNERO ----------------
-router.get("/genero/:genero", (req, res) => {
-  const genero = req.params.genero.toLowerCase();
-  console.log(`GET /videojuegos/genero/${genero}`);
+router.get("/genero/:genero", async (req, res) => {
+    try {
+        const genero = req.params.genero;
 
-  const resultado = videojuegos.filter(
-    v => v.genero && v.genero.toLowerCase() === genero
-  );
+        const juegos = await Producto.findAll({
+            where: { tipo: 'juego' },
+            include: [{
+                model: Juego,
+                where: { 
+                    genero: {
+                        [Op.like]: `%${genero}%`
+                    }
+                },
+                include: [Plataforma]
+            }]
+        });
 
-  res.json({
-    total: resultado.length,
-    genero: genero,
-    videojuegos: resultado
-  });
+        res.json({
+            success: true,
+            total: juegos.length,
+            genero: genero,
+            videojuegos: juegos
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al filtrar por género",
+            error: error.message
+        });
+    }
 });
 
-// ---------------- FILTRAR POR CONSOLA ----------------
-router.get("/consola/:nombreConsola", (req, res) => {
-  const nombreConsola = req.params.nombreConsola.toLowerCase();
-  console.log(`GET /videojuegos/consola/${nombreConsola}`);
+// ---------------- FILTRAR POR CONSOLA (PLATAFORMA) ----------------
+router.get("/consola/:nombreConsola", async (req, res) => {
+    try {
+        const nombreConsola = req.params.nombreConsola;
 
-  const resultado = videojuegos.filter(v =>
-    v.plataformas && v.plataformas.some(
-      p => p.toLowerCase().includes(nombreConsola)
-    )
-  );
+        const juegos = await Producto.findAll({
+            where: { tipo: 'juego' },
+            include: [{
+                model: Juego,
+                include: [{
+                    model: Plataforma,
+                    where: {
+                        nombre: {
+                            [Op.like]: `%${nombreConsola}%`
+                        }
+                    }
+                }]
+            }]
+        });
 
-  res.json({
-    total: resultado.length,
-    consola: nombreConsola,
-    videojuegos: resultado
-  });
+        res.json({
+            success: true,
+            total: juegos.length,
+            consola: nombreConsola,
+            videojuegos: juegos
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al filtrar por consola",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- FILTRAR POR EDAD MÍNIMA ----------------
-router.get("/edad/:pegi", (req, res) => {
-  const edadMinima = parseInt(req.params.pegi);
-  console.log(`GET /videojuegos/edad/${edadMinima}`);
+router.get("/edad/:edadMinima", async (req, res) => {
+    try {
+        const edadMinima = parseInt(req.params.edadMinima);
 
-  const resultado = videojuegos.filter(
-    v => v.pegi && v.pegi <= edadMinima
-  );
+        const juegos = await Producto.findAll({
+            where: { tipo: 'juego' },
+            include: [{
+                model: Juego,
+                where: {
+                    edad_minima: {
+                        [Op.lte]: edadMinima
+                    }
+                },
+                include: [Plataforma]
+            }]
+        });
 
-  res.json({
-    total: resultado.length,
-    edadMinima: edadMinima,
-    videojuegos: resultado
-  });
+        res.json({
+            success: true,
+            total: juegos.length,
+            edadMinima: edadMinima,
+            videojuegos: juegos
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al filtrar por edad",
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;

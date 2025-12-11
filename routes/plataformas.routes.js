@@ -1,34 +1,50 @@
 const express = require("express");
 const router = express.Router();
-
-// ---------------- IMPORTAR DATOS ----------------
-const plataformasData = require("../data/plataformas-data.json");
-const plataformas = plataformasData.plataformas;
+const { Plataforma } = require("../models");
 
 // ---------------- LISTA DE PLATAFORMAS ----------------
-router.get("/", (req, res) => {
-  console.log("GET /plataformas - lista completa");
+router.get("/", async (req, res) => {
+    try {
+        const plataformas = await Plataforma.findAll();
 
-  res.json({
-    total: plataformas.length,
-    plataformas
-  });
+        res.json({
+            success: true,
+            total: plataformas.length,
+            plataformas
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener plataformas",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- DETALLES POR ID ----------------
-router.get("/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  console.log(`GET /plataformas/${id}`);
+router.get("/:id", async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const plataforma = await Plataforma.findByPk(id);
 
-  const plataforma = plataformas.find(p => p.id === id);
+        if (!plataforma) {
+            return res.status(404).json({
+                success: false,
+                error: "Plataforma no encontrada"
+            });
+        }
 
-  if (!plataforma) {
-    return res.status(404).json({
-      error: "Plataforma no encontrada"
-    });
-  }
-
-  res.json(plataforma);
+        res.json({
+            success: true,
+            plataforma
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener plataforma",
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;
