@@ -7,6 +7,7 @@ const sequelize = new Sequelize(
   {
     host: 'localhost',
     dialect: 'mysql',
+    logging: false,
     pool: {  
       max: 10,  // Máximo de conexiones simultáneas 
       min: 0    // Mínimo de conexiones siempre abiertas
