@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Usuario, Producto, Carrito, Wishlist, MetodoPago } = require("../models");
+const { Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto } = require("../models");
 
 // ---------------- TODOS LOS USUARIOS ----------------
 router.get("/", async (req, res) => {
@@ -157,7 +157,7 @@ router.delete("/:userId", async (req, res) => {
 });
 
 // ============================================
-// CARRITO (necesitarás crear el modelo Carrito)
+// CARRITO
 // ============================================
 
 // Ver carrito
@@ -165,12 +165,15 @@ router.get("/:userId/carrito", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         
-        // Nota: Necesitarás crear el modelo Carrito
-        // Por ahora devuelvo mensaje
+        const carrito = await Carrito.findAll({
+            where: { usuario_id: userId },
+            include: [Producto]
+        });
+
         res.json({
             success: true,
-            mensaje: "Endpoint de carrito - necesita modelo Carrito",
-            carrito: []
+            total: carrito.length,
+            carrito
         });
     } catch (error) {
         res.status(500).json({
@@ -187,10 +190,37 @@ router.post("/:userId/carrito", async (req, res) => {
         const userId = parseInt(req.params.userId);
         const { producto_id, cantidad } = req.body;
 
-        // Aquí usarías el modelo Carrito cuando lo crees
-        res.json({
+        // Verificar si el producto ya está en el carrito
+        const itemExistente = await Carrito.findOne({
+            where: {
+                usuario_id: userId,
+                producto_id: producto_id
+            }
+        });
+
+        if (itemExistente) {
+            // Actualizar cantidad
+            itemExistente.cantidad += cantidad || 1;
+            await itemExistente.save();
+
+            return res.json({
+                success: true,
+                mensaje: "Cantidad actualizada en el carrito",
+                carrito: itemExistente
+            });
+        }
+
+        // Crear nuevo item en carrito
+        const nuevoItem = await Carrito.create({
+            usuario_id: userId,
+            producto_id,
+            cantidad: cantidad || 1
+        });
+
+        res.status(201).json({
             success: true,
-            mensaje: "Producto añadido al carrito (requiere modelo Carrito)"
+            mensaje: "Producto añadido al carrito",
+            carrito: nuevoItem
         });
     } catch (error) {
         res.status(500).json({
@@ -201,14 +231,65 @@ router.post("/:userId/carrito", async (req, res) => {
     }
 });
 
+// Actualizar cantidad en carrito
+router.put("/:userId/carrito/:productoId", async (req, res) => {
+    try {
+        const { userId, productoId } = req.params;
+        const { cantidad } = req.body;
+
+        const item = await Carrito.findOne({
+            where: {
+                usuario_id: userId,
+                producto_id: productoId
+            }
+        });
+
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado en el carrito"
+            });
+        }
+
+        item.cantidad = cantidad;
+        await item.save();
+
+        res.json({
+            success: true,
+            mensaje: "Cantidad actualizada",
+            carrito: item
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al actualizar carrito",
+            error: error.message
+        });
+    }
+});
+
 // Eliminar del carrito
 router.delete("/:userId/carrito/:productoId", async (req, res) => {
     try {
         const { userId, productoId } = req.params;
 
+        const resultado = await Carrito.destroy({
+            where: {
+                usuario_id: userId,
+                producto_id: productoId
+            }
+        });
+
+        if (resultado === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado en el carrito"
+            });
+        }
+
         res.json({
             success: true,
-            mensaje: "Producto eliminado del carrito (requiere modelo Carrito)"
+            mensaje: "Producto eliminado del carrito"
         });
     } catch (error) {
         res.status(500).json({
@@ -219,18 +300,123 @@ router.delete("/:userId/carrito/:productoId", async (req, res) => {
     }
 });
 
+// Completar compra (crear pedido)
+router.post("/:userId/carrito/comprar", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const { metodo_pago_id, direccion_envio, telefono_contacto, notas } = req.body;
+
+        // Obtener items del carrito
+        const itemsCarrito = await Carrito.findAll({
+            where: { usuario_id: userId },
+            include: [Producto]
+        });
+
+        if (itemsCarrito.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: "El carrito está vacío"
+            });
+        }
+
+        // Calcular total
+        let total = 0;
+        itemsCarrito.forEach(item => {
+            total += parseFloat(item.Producto.precio) * item.cantidad;
+        });
+
+        // Crear pedido
+        const nuevoPedido = await Pedido.create({
+            usuario_id: userId,
+            metodo_pago_id,
+            total,
+            direccion_envio,
+            telefono_contacto,
+            notas,
+            estado: 'pendiente'
+        });
+
+        // Crear pedido_productos
+        for (const item of itemsCarrito) {
+            const precioUnitario = parseFloat(item.Producto.precio);
+            const subtotal = precioUnitario * item.cantidad;
+
+            await PedidoProducto.create({
+                pedido_id: nuevoPedido.id,
+                producto_id: item.producto_id,
+                cantidad: item.cantidad,
+                precio_unitario: precioUnitario,
+                subtotal: subtotal
+            });
+        }
+
+        // Vaciar carrito
+        await Carrito.destroy({
+            where: { usuario_id: userId }
+        });
+
+        res.status(201).json({
+            success: true,
+            mensaje: "Compra realizada correctamente",
+            pedido: nuevoPedido
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al completar la compra",
+            error: error.message
+        });
+    }
+});
+
 // ============================================
-// WISHLIST (necesitarás crear el modelo Wishlist)
+// HISTORIAL DE COMPRAS
+// ============================================
+router.get("/:userId/historial-compras", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+
+        const pedidos = await Pedido.findAll({
+            where: { usuario_id: userId },
+            include: [{
+                model: PedidoProducto,
+                include: [Producto]
+            }, MetodoPago],
+            order: [['fecha_pedido', 'DESC']]
+        });
+
+        res.json({
+            success: true,
+            total: pedidos.length,
+            historial: pedidos
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener historial",
+            error: error.message
+        });
+    }
+});
+
+// ============================================
+// WISHLIST
 // ============================================
 
+// Ver wishlist
 router.get("/:userId/wishlist", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
 
+        const wishlist = await Wishlist.findAll({
+            where: { usuario_id: userId },
+            include: [Producto]
+        });
+
         res.json({
             success: true,
-            mensaje: "Endpoint de wishlist - necesita modelo Wishlist",
-            wishlist: []
+            total: wishlist.length,
+            wishlist
         });
     } catch (error) {
         res.status(500).json({
@@ -241,13 +427,36 @@ router.get("/:userId/wishlist", async (req, res) => {
     }
 });
 
+// Añadir a wishlist
 router.post("/:userId/wishlist", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
+        const { producto_id } = req.body;
 
-        res.json({
+        // Verificar si ya existe
+        const existente = await Wishlist.findOne({
+            where: {
+                usuario_id: userId,
+                producto_id: producto_id
+            }
+        });
+
+        if (existente) {
+            return res.status(400).json({
+                success: false,
+                error: "El producto ya está en la wishlist"
+            });
+        }
+
+        const nuevoItem = await Wishlist.create({
+            usuario_id: userId,
+            producto_id
+        });
+
+        res.status(201).json({
             success: true,
-            mensaje: "Añadido a wishlist (requiere modelo Wishlist)"
+            mensaje: "Añadido a favoritos",
+            wishlist: nuevoItem
         });
     } catch (error) {
         res.status(500).json({
@@ -258,11 +467,28 @@ router.post("/:userId/wishlist", async (req, res) => {
     }
 });
 
+// Eliminar de wishlist
 router.delete("/:userId/wishlist/:productoId", async (req, res) => {
     try {
+        const { userId, productoId } = req.params;
+
+        const resultado = await Wishlist.destroy({
+            where: {
+                usuario_id: userId,
+                producto_id: productoId
+            }
+        });
+
+        if (resultado === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado en favoritos"
+            });
+        }
+
         res.json({
             success: true,
-            mensaje: "Eliminado de wishlist (requiere modelo Wishlist)"
+            mensaje: "Eliminado de favoritos"
         });
     } catch (error) {
         res.status(500).json({
@@ -273,16 +499,45 @@ router.delete("/:userId/wishlist/:productoId", async (req, res) => {
     }
 });
 
-// ============================================
-// MÉTODOS DE PAGO (necesitarás crear el modelo MetodoPago)
-// ============================================
-
-router.get("/:userId/metodos-pago", async (req, res) => {
+// Eliminar wishlist completa
+router.delete("/:userId/wishlist", async (req, res) => {
     try {
+        const userId = parseInt(req.params.userId);
+
+        await Wishlist.destroy({
+            where: { usuario_id: userId }
+        });
+
         res.json({
             success: true,
-            mensaje: "Endpoint de métodos de pago - necesita modelo MetodoPago",
-            metodosPago: []
+            mensaje: "Wishlist eliminada completamente"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al eliminar wishlist",
+            error: error.message
+        });
+    }
+});
+
+// ============================================
+// MÉTODOS DE PAGO
+// ============================================
+
+// Ver métodos de pago
+router.get("/:userId/metodos-pago", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+
+        const metodosPago = await MetodoPago.findAll({
+            where: { usuario_id: userId }
+        });
+
+        res.json({
+            success: true,
+            total: metodosPago.length,
+            metodosPago
         });
     } catch (error) {
         res.status(500).json({
@@ -293,11 +548,22 @@ router.get("/:userId/metodos-pago", async (req, res) => {
     }
 });
 
+// Añadir método de pago
 router.post("/:userId/metodos-pago", async (req, res) => {
     try {
-        res.json({
+        const userId = parseInt(req.params.userId);
+        const { tipo, detalles } = req.body;
+
+        const nuevoMetodo = await MetodoPago.create({
+            tipo,
+            detalles,
+            usuario_id: userId
+        });
+
+        res.status(201).json({
             success: true,
-            mensaje: "Método de pago añadido (requiere modelo MetodoPago)"
+            mensaje: "Método de pago añadido",
+            metodoPago: nuevoMetodo
         });
     } catch (error) {
         res.status(500).json({
@@ -308,11 +574,63 @@ router.post("/:userId/metodos-pago", async (req, res) => {
     }
 });
 
-router.delete("/:userId/metodos-pago/:metodoId", async (req, res) => {
+// Actualizar método de pago
+router.put("/:userId/metodos-pago/:metodoId", async (req, res) => {
     try {
+        const { userId, metodoId } = req.params;
+        
+        const metodo = await MetodoPago.findOne({
+            where: {
+                id: metodoId,
+                usuario_id: userId
+            }
+        });
+
+        if (!metodo) {
+            return res.status(404).json({
+                success: false,
+                error: "Método de pago no encontrado"
+            });
+        }
+
+        await metodo.update(req.body);
+
         res.json({
             success: true,
-            mensaje: "Método de pago eliminado (requiere modelo MetodoPago)"
+            mensaje: "Método de pago actualizado",
+            metodoPago: metodo
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al actualizar método de pago",
+            error: error.message
+        });
+    }
+});
+
+// Eliminar método de pago
+router.delete("/:userId/metodos-pago/:metodoId", async (req, res) => {
+    try {
+        const { userId, metodoId } = req.params;
+
+        const resultado = await MetodoPago.destroy({
+            where: {
+                id: metodoId,
+                usuario_id: userId
+            }
+        });
+
+        if (resultado === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "Método de pago no encontrado"
+            });
+        }
+
+        res.json({
+            success: true,
+            mensaje: "Método de pago eliminado"
         });
     } catch (error) {
         res.status(500).json({
