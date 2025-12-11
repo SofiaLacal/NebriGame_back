@@ -1,44 +1,128 @@
 const express = require("express");
 const router = express.Router();
+const { Producto, Consola, Plataforma } = require("../models");
+const { Op } = require("sequelize");
 
-const consolasData = require("../data/consolas-data.json");
-const consolas = consolasData.consolas;
+// ---------------- LISTA DE CONSOLAS ----------------
+router.get("/", async (req, res) => {
+    try {
+        const consolas = await Producto.findAll({
+            where: { tipo: 'consola' },
+            include: [{
+                model: Consola,
+                include: [Plataforma]
+            }]
+        });
 
-// Lista de consolas
-router.get("/", (req, res) => {
-  console.log("GET /consolas");
-  res.json({ total: consolas.length, consolas });
+        res.json({
+            success: true,
+            total: consolas.length,
+            consolas
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener consolas",
+            error: error.message
+        });
+    }
 });
 
-// Detalles por ID
-router.get("/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const consola = consolas.find(c => c.id === id);
+// ---------------- DETALLES POR ID ----------------
+router.get("/:id", async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
 
-  if (!consola) {
-    return res.status(404).json({ error: "Consola no encontrada" });
-  }
+        const consola = await Producto.findOne({
+            where: { 
+                id: id,
+                tipo: 'consola'
+            },
+            include: [{
+                model: Consola,
+                include: [Plataforma]
+            }]
+        });
 
-  res.json(consola);
+        if (!consola) {
+            return res.status(404).json({
+                success: false,
+                error: "Consola no encontrada"
+            });
+        }
+
+        res.json({
+            success: true,
+            consola
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener consola",
+            error: error.message
+        });
+    }
 });
 
-// Filtrar por plataforma (categoria_id)
-router.get("/plataforma/:categoriaId", (req, res) => {
-  const categoriaId = parseInt(req.params.categoriaId);
-  const resultado = consolas.filter(c => c.categoria_id === categoriaId);
+// ---------------- FILTRAR POR PLATAFORMA ----------------
+router.get("/plataforma/:categoriaId", async (req, res) => {
+    try {
+        const categoriaId = parseInt(req.params.categoriaId);
 
-  res.json({ total: resultado.length, consolas: resultado });
+        const consolas = await Producto.findAll({
+            where: { tipo: 'consola' },
+            include: [{
+                model: Consola,
+                where: { plataforma_id: categoriaId },
+                include: [Plataforma]
+            }]
+        });
+
+        res.json({
+            success: true,
+            total: consolas.length,
+            consolas
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al filtrar por plataforma",
+            error: error.message
+        });
+    }
 });
 
-// Filtrar por fabricante
-router.get("/fabricante/:fabricante", (req, res) => {
-  const fabricante = req.params.fabricante.toLowerCase();
-  const resultado = consolas.filter(
-    c => c.marca.toLowerCase() === fabricante
-  );
+// ---------------- FILTRAR POR FABRICANTE ----------------
+router.get("/fabricante/:fabricante", async (req, res) => {
+    try {
+        const fabricante = req.params.fabricante;
 
-  res.json({ total: resultado.length, consolas: resultado });
+        const consolas = await Producto.findAll({
+            where: { tipo: 'consola' },
+            include: [{
+                model: Consola,
+                where: {
+                    fabricante: {
+                        [Op.like]: `%${fabricante}%`
+                    }
+                },
+                include: [Plataforma]
+            }]
+        });
+
+        res.json({
+            success: true,
+            total: consolas.length,
+            fabricante: fabricante,
+            consolas
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al filtrar por fabricante",
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;
-

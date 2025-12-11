@@ -1,193 +1,326 @@
 const express = require("express");
 const router = express.Router();
-
-// ---------------- IMPORTAR DATOS ----------------
-const usuariosData = require("../data/usuarios-data.json");
-const videojuegosData = require("../data/videojuegos-data.json");
-const consolasData = require("../data/consolas-data.json");
-const merchandisingData = require("../data/merchandising-data.json");
-
-let usuarios = usuariosData.usuarios;
-
-// Unificamos todos los productos (videojuegos + consolas + merchandising)
-const productos = [
-  ...videojuegosData.videojuegos,
-  ...consolasData.consolas,
-  ...merchandisingData.merchandising
-];
+const { Usuario, Producto, Carrito, Wishlist, MetodoPago } = require("../models");
 
 // ---------------- TODOS LOS USUARIOS ----------------
-router.get("/", (req, res) => {
-  res.json(usuarios);
+router.get("/", async (req, res) => {
+    try {
+        const usuarios = await Usuario.findAll();
+
+        res.json({
+            success: true,
+            total: usuarios.length,
+            usuarios
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener usuarios",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- LOGIN ----------------
-router.post("/login", (req, res) => {
-  console.log("POST /usuarios/login");
-  console.log(req.body);
+router.post("/login", async (req, res) => {
+    try {
+        const { email, contrasenna } = req.body;
 
-  const { email, password } = req.body;
+        const usuario = await Usuario.findOne({
+            where: { 
+                email: email,
+                contrasenna: contrasenna 
+            }
+        });
 
-  const usuario = usuarios.find(
-    u => u.email === email && u.password === password
-  );
+        if (!usuario) {
+            return res.status(401).json({
+                success: false,
+                error: "Credenciales incorrectas"
+            });
+        }
 
-  if (!usuario) {
-    return res.status(401).json({
-      error: "Credenciales incorrectas"
-    });
-  }
-
-  res.json({
-    mensaje: "Login correcto",
-    usuario
-  });
+        res.json({
+            success: true,
+            mensaje: "Login correcto",
+            usuario
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error en login",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- REGISTRO ----------------
-router.post("/registro", (req, res) => {
-  console.log("POST /usuarios/registro");
-  console.log(req.body);
+router.post("/registro", async (req, res) => {
+    try {
+        const nuevoUsuario = await Usuario.create(req.body);
 
-  const nuevoUsuario = {
-    id: usuarios.length + 1,
-    carrito: [],
-    wishlist: [],
-    metodosPago: [],
-    historialCompras: [],
-    ...req.body
-  };
-
-  usuarios.push(nuevoUsuario);
-
-  console.log("Usuario registrado:", nuevoUsuario);
-
-  res.status(201).json({
-    mensaje: "Usuario registrado correctamente",
-    usuario: nuevoUsuario
-  });
+        res.status(201).json({
+            success: true,
+            mensaje: "Usuario registrado correctamente",
+            usuario: nuevoUsuario
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al registrar usuario",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- PERFIL ----------------
-router.get("/:userId", (req, res) => {
-  const userId = parseInt(req.params.userId);
-  console.log(`GET /usuarios/${userId}`);
+router.get("/:userId", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const usuario = await Usuario.findByPk(userId);
 
-  const usuario = usuarios.find(u => u.id === userId);
+        if (!usuario) {
+            return res.status(404).json({
+                success: false,
+                error: "Usuario no encontrado"
+            });
+        }
 
-  if (!usuario) {
-    return res.status(404).json({
-      error: "Usuario no encontrado"
-    });
-  }
-
-  res.json(usuario);
+        res.json({
+            success: true,
+            usuario
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener usuario",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- ACTUALIZAR PERFIL ----------------
-router.put("/:userId", (req, res) => {
-  const userId = parseInt(req.params.userId);
-  console.log(`PUT /usuarios/${userId}`);
-  console.log(req.body);
+router.put("/:userId", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const usuario = await Usuario.findByPk(userId);
 
-  const index = usuarios.findIndex(u => u.id === userId);
+        if (!usuario) {
+            return res.status(404).json({
+                success: false,
+                error: "Usuario no encontrado"
+            });
+        }
 
-  if (index === -1) {
-    return res.status(404).json({ error: "Usuario no encontrado" });
-  }
+        await usuario.update(req.body);
 
-  usuarios[index] = {
-    ...usuarios[index],
-    ...req.body
-  };
-
-  res.json({
-    mensaje: "Perfil actualizado",
-    usuario: usuarios[index]
-  });
+        res.json({
+            success: true,
+            mensaje: "Perfil actualizado",
+            usuario
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al actualizar perfil",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- ELIMINAR USUARIO ----------------
-router.delete("/:userId", (req, res) => {
-  const userId = parseInt(req.params.userId);
-  console.log(`DELETE /usuario/${userId}`);
+router.delete("/:userId", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const usuario = await Usuario.findByPk(userId);
 
-  usuarios = usuarios.filter(u => u.id !== userId);
+        if (!usuario) {
+            return res.status(404).json({
+                success: false,
+                error: "Usuario no encontrado"
+            });
+        }
 
-  res.json({ mensaje: "Usuario eliminado correctamente" });
+        await usuario.destroy();
+
+        res.json({
+            success: true,
+            mensaje: "Usuario eliminado correctamente"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al eliminar usuario",
+            error: error.message
+        });
+    }
 });
 
-// ---------------- CARRITO ----------------
-router.get("/:userId/carrito", (req, res) => {
-  const userId = parseInt(req.params.userId);
-  const usuario = usuarios.find(u => u.id === userId);
+// ============================================
+// CARRITO (necesitarás crear el modelo Carrito)
+// ============================================
 
-  res.json(usuario?.carrito || []);
+// Ver carrito
+router.get("/:userId/carrito", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        
+        // Nota: Necesitarás crear el modelo Carrito
+        // Por ahora devuelvo mensaje
+        res.json({
+            success: true,
+            mensaje: "Endpoint de carrito - necesita modelo Carrito",
+            carrito: []
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener carrito",
+            error: error.message
+        });
+    }
 });
 
-router.post("/:userId/carrito", (req, res) => {
-  const userId = parseInt(req.params.userId);
-  const { productoId, cantidad } = req.body;
+// Añadir al carrito
+router.post("/:userId/carrito", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const { producto_id, cantidad } = req.body;
 
-  const usuario = usuarios.find(u => u.id === userId);
-  const producto = productos.find(p => p.id === productoId);
-
-  if (!usuario || !producto) {
-    return res.status(404).json({ error: "Usuario o producto no encontrado" });
-  }
-
-  usuario.carrito.push({ productoId, cantidad });
-
-  res.json({ mensaje: "Producto añadido al carrito", carrito: usuario.carrito });
+        // Aquí usarías el modelo Carrito cuando lo crees
+        res.json({
+            success: true,
+            mensaje: "Producto añadido al carrito (requiere modelo Carrito)"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al añadir al carrito",
+            error: error.message
+        });
+    }
 });
 
-router.delete("/:userId/carrito/:productoId", (req, res) => {
-  const { userId, productoId } = req.params;
-  const usuario = usuarios.find(u => u.id == userId);
+// Eliminar del carrito
+router.delete("/:userId/carrito/:productoId", async (req, res) => {
+    try {
+        const { userId, productoId } = req.params;
 
-  usuario.carrito = usuario.carrito.filter(p => p.productoId != productoId);
-
-  res.json({ mensaje: "Producto eliminado del carrito" });
+        res.json({
+            success: true,
+            mensaje: "Producto eliminado del carrito (requiere modelo Carrito)"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al eliminar del carrito",
+            error: error.message
+        });
+    }
 });
 
-// ---------------- WISHLIST ----------------
-router.get("/:userId/wishlist", (req, res) => {
-  const usuario = usuarios.find(u => u.id == req.params.userId);
-  res.json(usuario?.wishlist || []);
+// ============================================
+// WISHLIST (necesitarás crear el modelo Wishlist)
+// ============================================
+
+router.get("/:userId/wishlist", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+
+        res.json({
+            success: true,
+            mensaje: "Endpoint de wishlist - necesita modelo Wishlist",
+            wishlist: []
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener wishlist",
+            error: error.message
+        });
+    }
 });
 
-router.post("/:userId/wishlist", (req, res) => {
-  const usuario = usuarios.find(u => u.id == req.params.userId);
-  usuario.wishlist.push(req.body);
+router.post("/:userId/wishlist", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
 
-  res.json({ mensaje: "Añadido a favoritos", wishlist: usuario.wishlist });
+        res.json({
+            success: true,
+            mensaje: "Añadido a wishlist (requiere modelo Wishlist)"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al añadir a wishlist",
+            error: error.message
+        });
+    }
 });
 
-router.delete("/:userId/wishlist/:productoId", (req, res) => {
-  const usuario = usuarios.find(u => u.id == req.params.userId);
-  usuario.wishlist = usuario.wishlist.filter(p => p.productoId != req.params.productoId);
-
-  res.json({ mensaje: "Eliminado de favoritos" });
+router.delete("/:userId/wishlist/:productoId", async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            mensaje: "Eliminado de wishlist (requiere modelo Wishlist)"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al eliminar de wishlist",
+            error: error.message
+        });
+    }
 });
 
-// ---------------- MÉTODOS DE PAGO ----------------
-router.get("/:userId/metodos-pago", (req, res) => {
-  const usuario = usuarios.find(u => u.id == req.params.userId);
-  res.json(usuario?.metodosPago || []);
+// ============================================
+// MÉTODOS DE PAGO (necesitarás crear el modelo MetodoPago)
+// ============================================
+
+router.get("/:userId/metodos-pago", async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            mensaje: "Endpoint de métodos de pago - necesita modelo MetodoPago",
+            metodosPago: []
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener métodos de pago",
+            error: error.message
+        });
+    }
 });
 
-router.post("/:userId/metodos-pago", (req, res) => {
-  const usuario = usuarios.find(u => u.id == req.params.userId);
-  usuario.metodosPago.push(req.body);
-
-  res.json({ mensaje: "Método de pago añadido", metodosPago: usuario.metodosPago });
+router.post("/:userId/metodos-pago", async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            mensaje: "Método de pago añadido (requiere modelo MetodoPago)"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al añadir método de pago",
+            error: error.message
+        });
+    }
 });
 
-router.delete("/:userId/metodos-pago/:metodoId", (req, res) => {
-  const usuario = usuarios.find(u => u.id == req.params.userId);
-  usuario.metodosPago = usuario.metodosPago.filter(m => m.id != req.params.metodoId);
-
-  res.json({ mensaje: "Método de pago eliminado" });
+router.delete("/:userId/metodos-pago/:metodoId", async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            mensaje: "Método de pago eliminado (requiere modelo MetodoPago)"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al eliminar método de pago",
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;

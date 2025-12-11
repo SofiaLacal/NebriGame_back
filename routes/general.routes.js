@@ -1,73 +1,105 @@
 const express = require("express");
 const router = express.Router();
-
-// Importamos datos
-const videojuegosData = require("../data/videojuegos-data.json");
-const consolasData = require("../data/consolas-data.json");
-const merchandisingData = require("../data/merchandising-data.json");
-
-const videojuegos = videojuegosData.videojuegos;
-const consolas = consolasData.consolas;
-const merchandising = merchandisingData.merchandising;
-
-// Array general
-const todosLosProductos = [
-  ...videojuegos,
-  ...consolas,
-  ...merchandising
-];
+const { Producto, Juego, Consola, Merchandising } = require("../models");
+const { Op } = require("sequelize");
 
 // ---------------- HOME ----------------
-router.get("/", (req, res) => {
-  console.log("GET / - Página principal");
+router.get("/", async (req, res) => {
+    try {
+        // Productos destacados (primeros 5)
+        const destacados = await Producto.findAll({
+            limit: 5,
+            include: [
+                { model: Juego, required: false },
+                { model: Consola, required: false },
+                { model: Merchandising, required: false }
+            ]
+        });
 
-  // Simulamos productos destacados
-  const destacados = todosLosProductos.slice(0, 5);
+        const totalProductos = await Producto.count();
 
-  res.json({
-    mensaje: "Bienvenido a NebriGame",
-    destacados,
-    totalProductos: todosLosProductos.length
-  });
+        res.json({
+            success: true,
+            mensaje: "Bienvenido a NebriGame",
+            destacados,
+            totalProductos
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error en página principal",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- OFERTAS ----------------
-router.get("/ofertas", (req, res) => {
-  console.log("GET /ofertas");
+router.get("/ofertas", async (req, res) => {
+    try {
+        // Productos con precio menor a 50
+        const ofertas = await Producto.findAll({
+            where: {
+                precio: {
+                    [Op.lt]: 50
+                }
+            },
+            include: [
+                { model: Juego, required: false },
+                { model: Consola, required: false },
+                { model: Merchandising, required: false }
+            ]
+        });
 
-  // Simulación: productos con precio menor a X
-  const ofertas = todosLosProductos.filter(p => p.precio && p.precio < 50);
-
-  res.json({
-    total: ofertas.length,
-    ofertas
-  });
+        res.json({
+            success: true,
+            total: ofertas.length,
+            ofertas
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener ofertas",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- NOVEDADES ----------------
-router.get("/novedades", (req, res) => {
-  console.log("GET /novedades");
+router.get("/novedades", async (req, res) => {
+    try {
+        // Últimos 5 productos añadidos
+        const novedades = await Producto.findAll({
+            order: [['fecha_creacion', 'DESC']],
+            limit: 5,
+            include: [
+                { model: Juego, required: false },
+                { model: Consola, required: false },
+                { model: Merchandising, required: false }
+            ]
+        });
 
-  // Simulamos novedades (últimos añadidos)
-  const novedades = todosLosProductos.slice(-5).reverse();
-
-  res.json({
-    total: novedades.length,
-    novedades
-  });
+        res.json({
+            success: true,
+            total: novedades.length,
+            novedades
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener novedades",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- CONTACTO ----------------
 router.get("/contacto", (req, res) => {
-  console.log("GET /contacto");
-
-  res.json({
-    email: "contacto@nebrigame.com",
-    telefono: "+34 600 123 456",
-    direccion: "Madrid, España"
-  });
+    res.json({
+        success: true,
+        email: "contacto@nebrigame.com",
+        telefono: "+34 600 123 456",
+        direccion: "Madrid, España"
+    });
 });
 
 module.exports = router;
-
-

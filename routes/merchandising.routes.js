@@ -1,54 +1,92 @@
 const express = require("express");
 const router = express.Router();
-
-// ---------------- IMPORTAR DATOS ----------------
-const merchandisingData = require("../data/merchandising-data.json");
-const merchandising = merchandisingData.merchandising;
+const { Producto, Merchandising } = require("../models");
+const { Op } = require("sequelize");
 
 // ---------------- LISTA DE MERCHANDISING ----------------
-router.get("/", (req, res) => {
-  console.log("GET /merchandising - lista completa");
+router.get("/", async (req, res) => {
+    try {
+        const merchandising = await Producto.findAll({
+            where: { tipo: 'merchandising' },
+            include: [Merchandising]
+        });
 
-  res.json({
-    total: merchandising.length,
-    merchandising
-  });
+        res.json({
+            success: true,
+            total: merchandising.length,
+            merchandising
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener merchandising",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- FILTRAR POR NOMBRE DEL JUEGO ----------------
-router.get("/juego/:nombreJuego", (req, res) => {
-  const nombreJuego = req.params.nombreJuego.toLowerCase();
-  console.log(`GET /merchandising/juego/${nombreJuego}`);
+// Nota: En tu BD actual no hay campo "juegoAsociado" en la tabla merchandising
+// Si lo necesitas, deberás agregarlo a la tabla primero
+router.get("/juego/:nombreJuego", async (req, res) => {
+    try {
+        const nombreJuego = req.params.nombreJuego;
 
-  const resultado = merchandising.filter(
-    m =>
-      m.juegoAsociado &&
-      m.juegoAsociado.toLowerCase().includes(nombreJuego)
-  );
+        // Búsqueda por nombre del producto que contenga el nombre del juego
+        const merchandising = await Producto.findAll({
+            where: { 
+                tipo: 'merchandising',
+                nombre: {
+                    [Op.like]: `%${nombreJuego}%`
+                }
+            },
+            include: [Merchandising]
+        });
 
-  res.json({
-    total: resultado.length,
-    merchandising: resultado
-  });
+        res.json({
+            success: true,
+            total: merchandising.length,
+            merchandising
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al filtrar por juego",
+            error: error.message
+        });
+    }
 });
 
 // ---------------- FILTRAR POR CATEGORÍA ----------------
-router.get("/categoria/:categoria", (req, res) => {
-  const categoria = req.params.categoria.toLowerCase();
-  console.log(`GET /merchandising/categoria/${categoria}`);
+router.get("/categoria/:categoria", async (req, res) => {
+    try {
+        const categoria = req.params.categoria;
 
-  const resultado = merchandising.filter(
-    m =>
-      m.categoria &&
-      m.categoria.toLowerCase() === categoria
-  );
+        const merchandising = await Producto.findAll({
+            where: { tipo: 'merchandising' },
+            include: [{
+                model: Merchandising,
+                where: {
+                    categoria: {
+                        [Op.like]: `%${categoria}%`
+                    }
+                }
+            }]
+        });
 
-  res.json({
-    total: resultado.length,
-    merchandising: resultado
-  });
+        res.json({
+            success: true,
+            total: merchandising.length,
+            categoria: categoria,
+            merchandising
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al filtrar por categoría",
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;
-
-
