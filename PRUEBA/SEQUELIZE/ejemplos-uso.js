@@ -1,0 +1,422 @@
+
+// ============================================
+// EJEMPLOS DE USO EN CONTROLADORES/RUTAS
+// ============================================
+// controllers/productoController.js
+
+const { Producto, Juego, Consola, Merchandising, Plataforma, VistaProductosCompleta } = require('../models');
+
+// 1. OBTENER TODOS LOS PRODUCTOS CON SUS DETALLES
+exports.obtenerProductos = async (req, res) => {
+  try {
+    const productos = await Producto.findAll({
+      include: [
+        {
+          model: Juego,
+          as: 'juego',
+          include: [{
+            model: Plataforma,
+            as: 'plataformas',
+            through: { attributes: [] } // Excluir campos de la tabla intermedia
+          }]
+        },
+        {
+          model: Consola,
+          as: 'consola',
+          include: [{
+            model: Plataforma,
+            as: 'plataforma'
+          }]
+        },
+        {
+          model: Merchandising,
+          as: 'merchandising'
+        }
+      ]
+    });
+    
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 2. OBTENER PRODUCTOS USANDO LA VISTA (MÁS SIMPLE Y RÁPIDO)
+exports.obtenerProductosVista = async (req, res) => {
+  try {
+    const productos = await VistaProductosCompleta.findAll();
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 3. BUSCAR PRODUCTOS POR TIPO
+exports.buscarPorTipo = async (req, res) => {
+  try {
+    const { tipo } = req.params; // 'juego', 'consola', 'merchandising'
+    
+    const productos = await Producto.findAll({
+      where: { tipo },
+      include: [
+        { model: Juego, as: 'juego', required: tipo === 'juego' },
+        { model: Consola, as: 'consola', required: tipo === 'consola' },
+        { model: Merchandising, as: 'merchandising', required: tipo === 'merchandising' }
+      ]
+    });
+    
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 4. BUSCAR JUEGOS POR PLATAFORMA
+exports.juegosPorPlataforma = async (req, res) => {
+  try {
+    const { plataformaId } = req.params;
+    
+    const juegos = await Juego.findAll({
+      include: [
+        {
+          model: Producto,
+          as: 'producto',
+          attributes: ['id', 'nombre', 'precio', 'stock', 'imagen_url']
+        },
+        {
+          model: Plataforma,
+          as: 'plataformas',
+          where: { id: plataformaId },
+          through: { attributes: ['fecha_lanzamiento'] }
+        }
+      ]
+    });
+    
+    res.json(juegos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 5. CREAR UN JUEGO NUEVO (CON TRANSACCIÓN)
+exports.crearJuego = async (req, res) => {
+  const t = await sequelize.transaction();
+  
+  try {
+    const { nombre, precio, descripcion, stock, imagen_url, genero, edad_minima, plataformas } = req.body;
+    
+    // 1. Crear producto base
+    const producto = await Producto.create({
+      nombre,
+      precio,
+      descripcion,
+      stock,
+      tipo: 'juego',
+      imagen_url
+    }, { transaction: t });
+    
+    // 2. Crear especialización de juego
+    const juego = await Juego.create({
+      producto_id: producto.id,
+      genero,
+      edad_minima
+    }, { transaction: t });
+    
+    // 3. Asociar con plataformas
+    if (plataformas && plataformas.length > 0) {
+      const asociaciones = plataformas.map(p => ({
+        juego_id: juego.producto_id,
+        plataforma_id: p.id,
+        fecha_lanzamiento: p.fecha_lanzamiento || null
+      }));
+      
+      await JuegoPlataforma.bulkCreate(asociaciones, { transaction: t });
+    }
+    
+    await t.commit();
+    
+    // Obtener el juego completo
+    const juegoCompleto = await Juego.findOne({
+      where: { producto_id: producto.id },
+      include: [
+        { model: Producto, as: 'producto' },
+        { model: Plataforma, as: 'plataformas' }
+      ]
+    });
+    
+    res.status(201).json(juegoCompleto);
+  } catch (error) {
+    await t.rollback();
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ============================================
+// CONTROLADOR DE CARRITO
+// ============================================
+// controllers/carritoController.js
+
+const { Carrito, Producto, Usuario } = require('../models');
+
+// 1. OBTENER CARRITO DE UN USUARIO
+exports.obtenerCarrito = async (req, res) => {
+  try {
+    const { usuarioId } = req.params;
+    
+    const carrito = await Carrito.findAll({
+      where: { usuario_id: usuarioId },
+      include: [{
+        model: Producto,
+        as: 'producto',
+        attributes: ['id', 'nombre', 'precio', 'stock', 'imagen_url', 'tipo']
+      }]
+    });
+    
+    // Calcular total
+    const total = carrito.reduce((sum, item) => {
+      return sum + (parseFloat(item.producto.precio) * item.cantidad);
+    }, 0);
+    
+    res.json({
+      items: carrito,
+      total: total.toFixed(2),
+      cantidad_productos: carrito.length
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 2. AGREGAR AL CARRITO
+exports.agregarAlCarrito = async (req, res) => {
+  try {
+    const { usuarioId, productoId, cantidad } = req.body;
+    
+    // Verificar stock
+    const producto = await Producto.findByPk(productoId);
+    if (!producto) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+    
+    if (producto.stock < cantidad) {
+      return res.status(400).json({ error: 'Stock insuficiente' });
+    }
+    
+    // Buscar si ya existe en el carrito
+    const [carritoItem, created] = await Carrito.findOrCreate({
+      where: { usuario_id: usuarioId, producto_id: productoId },
+      defaults: { cantidad }
+    });
+    
+    if (!created) {
+      // Si ya existe, actualizar cantidad
+      carritoItem.cantidad += cantidad;
+      
+      // Verificar stock nuevamente
+      if (producto.stock < carritoItem.cantidad) {
+        return res.status(400).json({ error: 'Stock insuficiente para la cantidad solicitada' });
+      }
+      
+      await carritoItem.save();
+    }
+    
+    res.json(carritoItem);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 3. ELIMINAR DEL CARRITO
+exports.eliminarDelCarrito = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const deleted = await Carrito.destroy({
+      where: { id }
+    });
+    
+    if (deleted) {
+      res.json({ message: 'Producto eliminado del carrito' });
+    } else {
+      res.status(404).json({ error: 'Item no encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ============================================
+// CONTROLADOR DE PEDIDOS
+// ============================================
+// controllers/pedidoController.js
+
+const { Pedido, PedidoProducto, Producto, Usuario, MetodoPago, VistaResumenPedidos } = require('../models');
+
+// 1. CREAR PEDIDO DESDE EL CARRITO
+exports.crearPedido = async (req, res) => {
+  const t = await sequelize.transaction();
+  
+  try {
+    const { usuarioId, metodoPagoId, direccionEnvio, codigoPostal, ciudad, telefonoContacto, notas } = req.body;
+    
+    // 1. Obtener items del carrito
+    const carrito = await Carrito.findAll({
+      where: { usuario_id: usuarioId },
+      include: [{
+        model: Producto,
+        as: 'producto'
+      }],
+      transaction: t
+    });
+    
+    if (carrito.length === 0) {
+      await t.rollback();
+      return res.status(400).json({ error: 'El carrito está vacío' });
+    }
+    
+    // 2. Calcular total y verificar stock
+    let total = 0;
+    for (const item of carrito) {
+      if (item.producto.stock < item.cantidad) {
+        await t.rollback();
+        return res.status(400).json({ 
+          error: `Stock insuficiente para ${item.producto.nombre}` 
+        });
+      }
+      total += parseFloat(item.producto.precio) * item.cantidad;
+    }
+    
+    // 3. Crear pedido
+    const pedido = await Pedido.create({
+      usuario_id: usuarioId,
+      metodo_pago_id: metodoPagoId,
+      total: total.toFixed(2),
+      estado: 'pendiente',
+      direccion_envio: direccionEnvio,
+      codigo_postal: codigoPostal,
+      ciudad: ciudad,
+      telefono_contacto: telefonoContacto,
+      notas: notas
+    }, { transaction: t });
+    
+    // 4. Crear detalles del pedido
+    const detalles = carrito.map(item => ({
+      pedido_id: pedido.id,
+      producto_id: item.producto_id,
+      cantidad: item.cantidad,
+      precio_unitario: item.producto.precio,
+      subtotal: (parseFloat(item.producto.precio) * item.cantidad).toFixed(2)
+    }));
+    
+    await PedidoProducto.bulkCreate(detalles, { transaction: t });
+    
+    // 5. Actualizar stock
+    for (const item of carrito) {
+      await Producto.decrement('stock', {
+        by: item.cantidad,
+        where: { id: item.producto_id },
+        transaction: t
+      });
+    }
+    
+    // 6. Vaciar carrito
+    await Carrito.destroy({
+      where: { usuario_id: usuarioId },
+      transaction: t
+    });
+    
+    await t.commit();
+    
+    // Obtener pedido completo
+    const pedidoCompleto = await Pedido.findByPk(pedido.id, {
+      include: [
+        {
+          model: PedidoProducto,
+          as: 'detalles',
+          include: [{
+            model: Producto,
+            as: 'producto'
+          }]
+        },
+        {
+          model: Usuario,
+          as: 'usuario',
+          attributes: ['id', 'nombre', 'apellido1', 'email']
+        }
+      ]
+    });
+    
+    res.status(201).json(pedidoCompleto);
+  } catch (error) {
+    await t.rollback();
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 2. OBTENER PEDIDOS DE UN USUARIO
+exports.obtenerPedidosUsuario = async (req, res) => {
+  try {
+    const { usuarioId } = req.params;
+    
+    const pedidos = await Pedido.findAll({
+      where: { usuario_id: usuarioId },
+      include: [{
+        model: PedidoProducto,
+        as: 'detalles',
+        include: [{
+          model: Producto,
+          as: 'producto',
+          attributes: ['id', 'nombre', 'imagen_url']
+        }]
+      }],
+      order: [['fecha_pedido', 'DESC']]
+    });
+    
+    res.json(pedidos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 3. OBTENER RESUMEN DE PEDIDOS (USANDO VISTA)
+exports.obtenerResumenPedidos = async (req, res) => {
+  try {
+    const resumen = await VistaResumenPedidos.findAll({
+      order: [['fecha_pedido', 'DESC']]
+    });
+    res.json(resumen);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ============================================
+// EJEMPLO DE RUTAS (app.js o routes/index.js)
+// ============================================
+
+/*
+const express = require('express');
+const router = express.Router();
+const productoController = require('./controllers/productoController');
+const carritoController = require('./controllers/carritoController');
+const pedidoController = require('./controllers/pedidoController');
+
+// Rutas de productos
+router.get('/productos', productoController.obtenerProductos);
+router.get('/productos/vista', productoController.obtenerProductosVista);
+router.get('/productos/tipo/:tipo', productoController.buscarPorTipo);
+router.get('/productos/plataforma/:plataformaId', productoController.juegosPorPlataforma);
+router.post('/productos/juego', productoController.crearJuego);
+
+// Rutas de carrito
+router.get('/carrito/:usuarioId', carritoController.obtenerCarrito);
+router.post('/carrito', carritoController.agregarAlCarrito);
+router.delete('/carrito/:id', carritoController.eliminarDelCarrito);
+
+// Rutas de pedidos
+router.post('/pedidos', pedidoController.crearPedido);
+router.get('/pedidos/usuario/:usuarioId', pedidoController.obtenerPedidosUsuario);
+router.get('/pedidos/resumen', pedidoController.obtenerResumenPedidos);
+
+module.exports = router;
+*/

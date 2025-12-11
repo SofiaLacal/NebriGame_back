@@ -6,14 +6,18 @@ const sequelize = new Sequelize(
   '', 
   {
     host: 'localhost',
-    dialect: 'mysql'
-  }
+    dialect: 'mysql',
+    pool: {  
+      max: 10,  // Máximo de conexiones simultáneas 
+      min: 0    // Mínimo de conexiones siempre abiertas
+    }
+  } 
 );
 
 sequelize.authenticate()
 
   .then(() => {
-    console.log('Conexión establecida correctamente')
+    console.log('Conexión establecida correctamente a NebriGame')
 
   }).catch((error) => {
     console.log('Error al conectar a la BD: ', error)
