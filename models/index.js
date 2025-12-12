@@ -5,7 +5,7 @@
 const sequelize = require('../config/db');
 
 // Importar todos los modelos
-const Usuario = require('./Usuario');
+const Usuario = require('./Usuarios');
 const MetodoPago = require('./MetodoPago');
 const Plataforma = require('./Plataforma');
 const Producto = require('./Producto');
@@ -190,6 +190,6 @@ module.exports = {
   Wishlist,
   Pedido,
   PedidoProducto,
-  VistaProductosCompleta,
+/*   VistaProductosCompleta, */
   VistaResumenPedidos
 };
