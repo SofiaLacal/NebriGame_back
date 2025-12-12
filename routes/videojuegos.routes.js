@@ -10,7 +10,11 @@ router.get("/", async (req, res) => {
             where: { tipo: 'juego' },
             include: [{
                 model: Juego,
-                include: [Plataforma]
+                as: 'juego',
+                include: [{
+                    model: Plataforma,
+                    as: 'plataformas'
+                }]
             }]
         });
 
@@ -42,7 +46,11 @@ router.get("/:nombre", async (req, res) => {
             },
             include: [{
                 model: Juego,
-                include: [Plataforma]
+                as: 'juego',
+                include: [{
+                    model: Plataforma,
+                    as: 'plataformas'
+                }]
             }]
         });
 
@@ -75,12 +83,16 @@ router.get("/genero/:genero", async (req, res) => {
             where: { tipo: 'juego' },
             include: [{
                 model: Juego,
+                as: 'juego',
                 where: { 
                     genero: {
                         [Op.like]: `%${genero}%`
                     }
                 },
-                include: [Plataforma]
+                include: [{
+                    model: Plataforma,
+                    as: 'plataformas'
+                }]
             }]
         });
 
@@ -108,8 +120,10 @@ router.get("/consola/:nombreConsola", async (req, res) => {
             where: { tipo: 'juego' },
             include: [{
                 model: Juego,
+                as: 'juego',
                 include: [{
                     model: Plataforma,
+                    as: 'plataformas',
                     where: {
                         nombre: {
                             [Op.like]: `%${nombreConsola}%`
@@ -143,12 +157,16 @@ router.get("/edad/:edadMinima", async (req, res) => {
             where: { tipo: 'juego' },
             include: [{
                 model: Juego,
+                as: 'juego',
                 where: {
                     edad_minima: {
                         [Op.lte]: edadMinima
                     }
                 },
-                include: [Plataforma]
+                include: [{
+                    model: Plataforma,
+                    as: 'plataformas'
+                }]
             }]
         });
 

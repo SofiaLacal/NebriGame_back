@@ -10,9 +10,9 @@ router.get("/", async (req, res) => {
         const destacados = await Producto.findAll({
             limit: 5,
             include: [
-                { model: Juego, required: false },
-                { model: Consola, required: false },
-                { model: Merchandising, required: false }
+                { model: Juego, as: 'juego', required: false },
+                { model: Consola, as: 'consola', required: false },
+                { model: Merchandising, as: 'merchandising', required: false }
             ]
         });
 
@@ -44,9 +44,9 @@ router.get("/ofertas", async (req, res) => {
                 }
             },
             include: [
-                { model: Juego, required: false },
-                { model: Consola, required: false },
-                { model: Merchandising, required: false }
+                { model: Juego, as: 'juego', required: false },
+                { model: Consola, as: 'consola', required: false },
+                { model: Merchandising, as: 'merchandising', required: false }
             ]
         });
 
@@ -72,9 +72,9 @@ router.get("/novedades", async (req, res) => {
             order: [['fecha_creacion', 'DESC']],
             limit: 5,
             include: [
-                { model: Juego, required: false },
-                { model: Consola, required: false },
-                { model: Merchandising, required: false }
+                { model: Juego, as: 'juego', required: false },
+                { model: Consola, as: 'consola', required: false },
+                { model: Merchandising, as: 'merchandising', required: false }
             ]
         });
 

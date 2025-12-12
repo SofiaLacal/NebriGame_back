@@ -167,7 +167,10 @@ router.get("/:userId/carrito", async (req, res) => {
         
         const carrito = await Carrito.findAll({
             where: { usuario_id: userId },
-            include: [Producto]
+            include: [{
+                model: Producto,
+                as: 'producto'
+            }]
         });
 
         res.json({
@@ -309,7 +312,10 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
         // Obtener items del carrito
         const itemsCarrito = await Carrito.findAll({
             where: { usuario_id: userId },
-            include: [Producto]
+            include: [{
+                model: Producto,
+                as: 'producto'
+            }]
         });
 
         if (itemsCarrito.length === 0) {
@@ -322,7 +328,7 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
         // Calcular total
         let total = 0;
         itemsCarrito.forEach(item => {
-            total += parseFloat(item.Producto.precio) * item.cantidad;
+            total += parseFloat(item.producto.precio) * item.cantidad;
         });
 
         // Crear pedido
@@ -338,7 +344,7 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
 
         // Crear pedido_productos
         for (const item of itemsCarrito) {
-            const precioUnitario = parseFloat(item.Producto.precio);
+            const precioUnitario = parseFloat(item.producto.precio);
             const subtotal = precioUnitario * item.cantidad;
 
             await PedidoProducto.create({
@@ -380,8 +386,15 @@ router.get("/:userId/historial-compras", async (req, res) => {
             where: { usuario_id: userId },
             include: [{
                 model: PedidoProducto,
-                include: [Producto]
-            }, MetodoPago],
+                as: 'detalles',
+                include: [{
+                    model: Producto,
+                    as: 'producto'
+                }]
+            }, {
+                model: MetodoPago,
+                as: 'metodoPago'
+            }],
             order: [['fecha_pedido', 'DESC']]
         });
 
@@ -410,7 +423,10 @@ router.get("/:userId/wishlist", async (req, res) => {
 
         const wishlist = await Wishlist.findAll({
             where: { usuario_id: userId },
-            include: [Producto]
+            include: [{
+                model: Producto,
+                as: 'producto'
+            }]
         });
 
         res.json({

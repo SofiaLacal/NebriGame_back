@@ -10,7 +10,11 @@ router.get("/", async (req, res) => {
             where: { tipo: 'consola' },
             include: [{
                 model: Consola,
-                include: [Plataforma]
+                as: 'consola',
+                include: [{
+                    model: Plataforma,
+                    as: 'plataforma'
+                }]
             }]
         });
 
@@ -40,7 +44,11 @@ router.get("/:id", async (req, res) => {
             },
             include: [{
                 model: Consola,
-                include: [Plataforma]
+                as: 'consola',
+                include: [{
+                    model: Plataforma,
+                    as: 'plataforma'
+                }]
             }]
         });
 

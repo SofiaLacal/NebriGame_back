@@ -8,7 +8,10 @@ router.get("/", async (req, res) => {
     try {
         const merchandising = await Producto.findAll({
             where: { tipo: 'merchandising' },
-            include: [Merchandising]
+            include: [{
+                model: Merchandising,
+                as: 'merchandising'
+            }]
         });
 
         res.json({
@@ -40,7 +43,10 @@ router.get("/juego/:nombreJuego", async (req, res) => {
                     [Op.like]: `%${nombreJuego}%`
                 }
             },
-            include: [Merchandising]
+            include: [{
+                model: Merchandising,
+                as: 'merchandising'
+            }]
         });
 
         res.json({
@@ -66,6 +72,7 @@ router.get("/categoria/:categoria", async (req, res) => {
             where: { tipo: 'merchandising' },
             include: [{
                 model: Merchandising,
+                as: 'merchandising',
                 where: {
                     categoria: {
                         [Op.like]: `%${categoria}%`

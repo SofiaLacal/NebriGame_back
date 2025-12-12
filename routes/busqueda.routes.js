@@ -26,9 +26,29 @@ router.get("/", async (req, res) => {
                 ]
             },
             include: [
-                { model: Juego, required: false, include: [Plataforma] },
-                { model: Consola, required: false, include: [Plataforma] },
-                { model: Merchandising, required: false }
+                { 
+                    model: Juego, 
+                    as: 'juego',
+                    required: false, 
+                    include: [{
+                        model: Plataforma,
+                        as: 'plataformas'
+                    }]
+                },
+                { 
+                    model: Consola, 
+                    as: 'consola',
+                    required: false, 
+                    include: [{
+                        model: Plataforma,
+                        as: 'plataforma'
+                    }]
+                },
+                { 
+                    model: Merchandising, 
+                    as: 'merchandising',
+                    required: false 
+                }
             ]
         });
 
