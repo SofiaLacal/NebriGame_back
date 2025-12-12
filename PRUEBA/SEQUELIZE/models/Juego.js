@@ -3,11 +3,11 @@
 // ============================================
 
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../config/db');
 
 const Juego = sequelize.define('Juego', {
   producto_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.INTEGER,  
     primaryKey: true,
     references: {
       model: 'productos',
