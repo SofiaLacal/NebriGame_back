@@ -1,106 +1,195 @@
+// ============================================
+// ARCHIVO DE ASOCIACIONES Y SETUP
+// ============================================
+
 const sequelize = require('../config/db');
 
 // Importar todos los modelos
+const Usuario = require('./Usuario');
+const MetodoPago = require('./MetodoPago');
+const Plataforma = require('./Plataforma');
 const Producto = require('./Producto');
 const Juego = require('./Juego');
 const Consola = require('./Consola');
 const Merchandising = require('./Merchandising');
-const Plataforma = require('./Plataforma');
-const Usuario = require('./Usuario');
+const JuegoPlataforma = require('./JuegoPlataforma');
 const Carrito = require('./Carrito');
 const Wishlist = require('./Wishlist');
-const MetodoPago = require('./MetodoPago');
 const Pedido = require('./Pedido');
 const PedidoProducto = require('./PedidoProducto');
+/* const VistaProductosCompleta = require('./VistaProductosCompleta'); */
+const VistaResumenPedidos = require('./VistaResumenPedidos');
 
-// ========================================
-// RELACIONES PRODUCTO -> JUEGO/CONSOLA/MERCHANDISING
-// ========================================
-Producto.hasOne(Juego, { foreignKey: 'producto_id' });
-Juego.belongsTo(Producto, { foreignKey: 'producto_id' });
 
-Producto.hasOne(Consola, { foreignKey: 'producto_id' });
-Consola.belongsTo(Producto, { foreignKey: 'producto_id' });
+// ============================================
+// DEFINIR TODAS LAS ASOCIACIONES
+// ============================================
 
-Producto.hasOne(Merchandising, { foreignKey: 'producto_id' });
-Merchandising.belongsTo(Producto, { foreignKey: 'producto_id' });
-
-// ========================================
-// RELACIONES CON PLATAFORMA
-// ========================================
-Juego.belongsTo(Plataforma, { foreignKey: 'plataforma_id' });
-Plataforma.hasMany(Juego, { foreignKey: 'plataforma_id' });
-
-Consola.belongsTo(Plataforma, { foreignKey: 'plataforma_id' });
-Plataforma.hasMany(Consola, { foreignKey: 'plataforma_id' });
-
-// ========================================
-// RELACIONES USUARIO -> CARRITO
-// ========================================
-Usuario.hasMany(Carrito, { foreignKey: 'usuario_id' });
-Carrito.belongsTo(Usuario, { foreignKey: 'usuario_id' });
-
-Producto.hasMany(Carrito, { foreignKey: 'producto_id' });
-Carrito.belongsTo(Producto, { foreignKey: 'producto_id' });
-
-// ========================================
-// RELACIONES USUARIO -> WISHLIST
-// ========================================
-Usuario.hasMany(Wishlist, { foreignKey: 'usuario_id' });
-Wishlist.belongsTo(Usuario, { foreignKey: 'usuario_id' });
-
-Producto.hasMany(Wishlist, { foreignKey: 'producto_id' });
-Wishlist.belongsTo(Producto, { foreignKey: 'producto_id' });
-
-// ========================================
-// RELACIONES USUARIO -> MÉTODO DE PAGO
-// ========================================
-Usuario.hasMany(MetodoPago, { foreignKey: 'usuario_id' });
-MetodoPago.belongsTo(Usuario, { foreignKey: 'usuario_id' });
-
-// ========================================
-// RELACIONES PEDIDOS
-// ========================================
-Usuario.hasMany(Pedido, { foreignKey: 'usuario_id' });
-Pedido.belongsTo(Usuario, { foreignKey: 'usuario_id' });
-
-MetodoPago.hasMany(Pedido, { foreignKey: 'metodo_pago_id' });
-Pedido.belongsTo(MetodoPago, { foreignKey: 'metodo_pago_id' });
-
-// Relación muchos a muchos: Pedido <-> Producto (a través de PedidoProducto)
-Pedido.belongsToMany(Producto, { 
-    through: PedidoProducto, 
-    foreignKey: 'pedido_id',
-    otherKey: 'producto_id'
+// Usuario - MetodoPago (1:N)
+Usuario.hasMany(MetodoPago, {
+  foreignKey: 'usuario_id',
+  as: 'metodosPago'
+});
+MetodoPago.belongsTo(Usuario, {
+  foreignKey: 'usuario_id',
+  as: 'usuario'
 });
 
-Producto.belongsToMany(Pedido, { 
-    through: PedidoProducto, 
-    foreignKey: 'producto_id',
-    otherKey: 'pedido_id'
+// Usuario - Carrito (1:N)
+Usuario.hasMany(Carrito, {
+  foreignKey: 'usuario_id',
+  as: 'carrito'
+});
+Carrito.belongsTo(Usuario, {
+  foreignKey: 'usuario_id',
+  as: 'usuario'
 });
 
-// Relaciones directas con la tabla intermedia
-Pedido.hasMany(PedidoProducto, { foreignKey: 'pedido_id' });
-PedidoProducto.belongsTo(Pedido, { foreignKey: 'pedido_id' });
+// Usuario - Wishlist (1:N)
+Usuario.hasMany(Wishlist, {
+  foreignKey: 'usuario_id',
+  as: 'wishlist'
+});
+Wishlist.belongsTo(Usuario, {
+  foreignKey: 'usuario_id',
+  as: 'usuario'
+});
 
-Producto.hasMany(PedidoProducto, { foreignKey: 'producto_id' });
-PedidoProducto.belongsTo(Producto, { foreignKey: 'producto_id' });
+// Usuario - Pedidos (1:N)
+Usuario.hasMany(Pedido, {
+  foreignKey: 'usuario_id',
+  as: 'pedidos'
+});
+Pedido.belongsTo(Usuario, {
+  foreignKey: 'usuario_id',
+  as: 'usuario'
+});
 
-// ========================================
-// EXPORTAR TODOS LOS MODELOS
-// ========================================
+// Pedido - MetodoPago (N:1)
+Pedido.belongsTo(MetodoPago, {
+  foreignKey: 'metodo_pago_id',
+  as: 'metodoPago'
+});
+
+// Producto - Carrito (1:N)
+Producto.hasMany(Carrito, {
+  foreignKey: 'producto_id',
+  as: 'enCarritos'
+});
+Carrito.belongsTo(Producto, {
+  foreignKey: 'producto_id',
+  as: 'producto'
+});
+
+// Producto - Wishlist (1:N)
+Producto.hasMany(Wishlist, {
+  foreignKey: 'producto_id',
+  as: 'enWishlists'
+});
+Wishlist.belongsTo(Producto, {
+  foreignKey: 'producto_id',
+  as: 'producto'
+});
+
+// Producto - Especialización (1:1)
+Producto.hasOne(Juego, {
+  foreignKey: 'producto_id',
+  as: 'juego'
+});
+Juego.belongsTo(Producto, {
+  foreignKey: 'producto_id',
+  as: 'producto'
+});
+
+Producto.hasOne(Consola, {
+  foreignKey: 'producto_id',
+  as: 'consola'
+});
+Consola.belongsTo(Producto, {
+  foreignKey: 'producto_id',
+  as: 'producto'
+});
+
+Producto.hasOne(Merchandising, {
+  foreignKey: 'producto_id',
+  as: 'merchandising'
+});
+Merchandising.belongsTo(Producto, {
+  foreignKey: 'producto_id',
+  as: 'producto'
+});
+
+// Consola - Plataforma (N:1)
+Consola.belongsTo(Plataforma, {
+  foreignKey: 'plataforma_id',
+  as: 'plataforma'
+});
+Plataforma.hasMany(Consola, {
+  foreignKey: 'plataforma_id',
+  as: 'consolas'
+});
+
+// Juego - Plataforma (N:N) a través de JuegoPlataforma
+Juego.belongsToMany(Plataforma, {
+  through: JuegoPlataforma,
+  foreignKey: 'juego_id',
+  otherKey: 'plataforma_id',
+  as: 'plataformas'
+});
+Plataforma.belongsToMany(Juego, {
+  through: JuegoPlataforma,
+  foreignKey: 'plataforma_id',
+  otherKey: 'juego_id',
+  as: 'juegos'
+});
+
+// Pedido - Producto (N:N) a través de PedidoProducto
+Pedido.belongsToMany(Producto, {
+  through: PedidoProducto,
+  foreignKey: 'pedido_id',
+  otherKey: 'producto_id',
+  as: 'productos'
+});
+Producto.belongsToMany(Pedido, {
+  through: PedidoProducto,
+  foreignKey: 'producto_id',
+  otherKey: 'pedido_id',
+  as: 'pedidos'
+});
+
+// Acceso directo a la tabla intermedia
+Pedido.hasMany(PedidoProducto, {
+  foreignKey: 'pedido_id',
+  as: 'detalles'
+});
+PedidoProducto.belongsTo(Pedido, {
+  foreignKey: 'pedido_id',
+  as: 'pedido'
+});
+
+PedidoProducto.belongsTo(Producto, {
+  foreignKey: 'producto_id',
+  as: 'producto'
+});
+
+// ============================================
+// EXPORTAR TODO
+// ============================================
+
 module.exports = {
-    sequelize,
-    Producto,
-    Juego,
-    Consola,
-    Merchandising,
-    Plataforma,
-    Usuario,
-    Carrito,
-    Wishlist,
-    MetodoPago,
-    Pedido,
-    PedidoProducto
+  sequelize,
+  Usuario,
+  MetodoPago,
+  Plataforma,
+  Producto,
+  Juego,
+  Consola,
+  Merchandising,
+  JuegoPlataforma,
+  Carrito,
+  Wishlist,
+  Pedido,
+  PedidoProducto,
+  VistaProductosCompleta,
+  VistaResumenPedidos
 };
