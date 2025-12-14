@@ -18,7 +18,7 @@ const sequelize = new Sequelize(
 sequelize.authenticate()
 
   .then(() => {
-    console.log('Conexión establecida correctamente a NebriGame')
+    console.log('Conexión establecida correctamente a la BD')
 
   }).catch((error) => {
     console.log('Error al conectar a la BD: ', error)

@@ -26,9 +26,14 @@ app.use("/plataformas", plataformasRoutes);
 app.use("/buscar", busquedaRoutes);
 app.use("/admin", adminRoutes);
 
+
 // -------- INICIAR SERVIDOR --------
-sequelize.sync().then(() => {
-    app.listen(PORT, () => {
-        console.log(`✅ NebriGame API corriendo en el puerto ${PORT}`);
+sequelize.sync()
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`NebriGame corriendo en el puerto ${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('Error al iniciar NebriGame', err);
     });
-});
