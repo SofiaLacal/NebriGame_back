@@ -79,11 +79,15 @@ router.get("/plataforma/:categoriaId", async (req, res) => {
 
         const consolas = await Producto.findAll({
             where: { tipo: 'consola' },
-            include: [{
-                model: Consola,
+                include: [{
+                    model: Consola,
+                    as: 'consola',  
                 where: { plataforma_id: categoriaId },
-                include: [Plataforma]
-            }]
+                    include: [{
+                        model: Plataforma,
+                        as: 'plataforma' 
+                    }]
+                }]
         });
 
         res.json({
@@ -109,12 +113,16 @@ router.get("/fabricante/:fabricante", async (req, res) => {
             where: { tipo: 'consola' },
             include: [{
                 model: Consola,
+                as: 'consola',
                 where: {
                     fabricante: {
                         [Op.like]: `%${fabricante}%`
                     }
                 },
-                include: [Plataforma]
+                include: [{
+                    model: Plataforma,
+                    as: 'plataforma'
+                }]
             }]
         });
 
