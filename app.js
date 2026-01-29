@@ -9,6 +9,10 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Serve static files from assets directory
+app.use("/assets", express.static(__dirname + "/assets"));
+
 const PORT = 4004;
 
 // -------- IMPORTAR RUTAS --------
