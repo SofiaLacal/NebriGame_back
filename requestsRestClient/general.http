@@ -1,0 +1,22 @@
+// ============================================
+// RUTAS GENERALES
+// ============================================
+
+// HOME - PÁGINA PRINCIPAL
+GET http://localhost:4004/
+
+###
+
+// OFERTAS - PRODUCTOS CON PRECIO MENOR A 50
+GET http://localhost:4004/ofertas
+
+###
+
+// NOVEDADES - ÚLTIMOS 5 PRODUCTOS AÑADIDOS
+GET http://localhost:4004/novedades
+
+###
+
+// CONTACTO
+GET http://localhost:4004/contacto
+

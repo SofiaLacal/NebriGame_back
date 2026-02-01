@@ -1,0 +1,83 @@
+// ============================================
+// RUTAS DE ADMINISTRACIÓN
+// ============================================
+
+// CREAR PRODUCTO GENÉRICO
+POST http://localhost:4004/admin/productos
+Content-Type: application/json
+
+{
+    "nombre": "Producto de Prueba",
+    "precio": 29.99,
+    "descripcion": "Descripción del producto",
+    "stock": 10,
+    "tipo": "merchandising",
+    "imagen_url": "https://example.com/imagen.jpg"
+}
+
+###
+
+// ACTUALIZAR PRODUCTO
+PUT http://localhost:4004/admin/productos/1
+Content-Type: application/json
+
+{
+    "nombre": "Producto Actualizado",
+    "precio": 39.99,
+    "stock": 15
+}
+
+###
+
+// ELIMINAR PRODUCTO
+DELETE http://localhost:4004/admin/productos/1
+
+###
+
+// CREAR VIDEOJUEGO
+POST http://localhost:4004/admin/juegos
+Content-Type: application/json
+
+{
+    "nombre": "Nuevo Videojuego",
+    "precio": 59.99,
+    "descripcion": "Descripción del videojuego",
+    "stock": 20,
+    "imagen_url": "https://example.com/juego.jpg",
+    "genero": "Aventura",
+    "edad_minima": 12
+}
+
+###
+
+// CREAR CONSOLA
+POST http://localhost:4004/admin/consolas
+Content-Type: application/json
+
+{
+    "nombre": "Nueva Consola",
+    "precio": 399.99,
+    "descripcion": "Descripción de la consola",
+    "stock": 5,
+    "imagen_url": "https://example.com/consola.jpg",
+    "capacidad_almacenamiento": "1TB",
+    "color": "Negro",
+    "fabricante": "Sony",
+    "plataforma_id": 1
+}
+
+###
+
+// CREAR MERCHANDISING
+POST http://localhost:4004/admin/merchandising
+Content-Type: application/json
+
+{
+    "nombre": "Camiseta Gaming",
+    "precio": 24.99,
+    "descripcion": "Camiseta oficial del juego",
+    "stock": 50,
+    "imagen_url": "https://example.com/camiseta.jpg",
+    "categoria": "Ropa"
+}
+

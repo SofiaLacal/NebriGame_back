@@ -1,0 +1,27 @@
+// ============================================
+// RUTAS DE VIDEOJUEGOS
+// ============================================
+
+// LISTA DE TODOS LOS VIDEOJUEGOS
+GET http://localhost:4004/videojuegos/
+
+###
+
+// DETALLES DE VIDEOJUEGO POR NOMBRE
+GET http://localhost:4004/videojuegos/the-witcher-3
+
+###
+
+// FILTRAR POR GÉNERO
+GET http://localhost:4004/videojuegos/genero/accion
+
+###
+
+// FILTRAR POR CONSOLA/PLATAFORMA
+GET http://localhost:4004/videojuegos/consola/PlayStation
+
+###
+
+// FILTRAR POR EDAD MÍNIMA
+GET http://localhost:4004/videojuegos/edad/18
+

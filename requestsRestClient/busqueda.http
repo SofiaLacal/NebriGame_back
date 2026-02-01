@@ -1,0 +1,17 @@
+// ============================================
+// RUTAS DE BÚSQUEDA
+// ============================================
+
+// BÚSQUEDA GENERAL (requiere parámetro 'q')
+GET http://localhost:4004/buscar?q=witcher
+
+###
+
+// BÚSQUEDA POR NOMBRE O DESCRIPCIÓN
+GET http://localhost:4004/buscar?q=playstation
+
+###
+
+// BÚSQUEDA CON TÉRMINO ESPECÍFICO
+GET http://localhost:4004/buscar?q=consola
+
