@@ -4,13 +4,13 @@ USE nebrigame;
 -- ============================================
 -- INSERTS PARA USUARIOS
 -- ============================================
-INSERT INTO usuarios (nombre, apellido1, apellido2, DNI, email, contrasenna) VALUES
-('Juan', 'García', 'López', '12345678A', 'juan.garcia@email.com', '$2b$10$ejemploHashPassword123'),
-('María', 'Martínez', 'Sánchez', '23456789B', 'maria.martinez@email.com', '$2b$10$ejemploHashPassword456'),
-('Carlos', 'Rodríguez', NULL, '34567890C', 'carlos.rodriguez@email.com', '$2b$10$ejemploHashPassword789'),
-('Ana', 'Fernández', 'González', '45678901D', 'ana.fernandez@email.com', '$2b$10$ejemploHashPassword012'),
-('Luis', 'Pérez', 'Torres', '56789012E', 'luis.perez@email.com', '$2b$10$ejemploHashPassword345'),
-('Sara', 'López', 'Ruiz', '67890123F', 'sara.lopez@email.com', '$2b$10$ejemploHashPassword678');
+INSERT INTO usuarios (nombre, apellido1, apellido2, email, contrasenna) VALUES
+('Pablo', 'Herrero', NULL, 'pablohgb@gmail.com', '$2b$10$UxoeUu2VzE0XX5xbbIl59.wkSifHzYHaRhVSruEOGJSFd7vkPv9I6'),
+('Javier', 'Monzon', NULL, 'javiermonzon@gmail.com', '$2b$10$sMUC7qYuUlzP8s7.CWltvOCR1Fw9divKdBY2p83yfWtMucMhpim3K'),
+('Sofia', 'Lacal', NULL, 'sofialacal@gmail.com', '$2b$10$GPjQakuK6C710yiSCuQShuLErpS/C73mE66TbDOMUjCZMKmT8g9Cy'),
+('Fran', 'Albiar', NULL, 'franalbiar@gmail.com', '$$2b$10$WqHT4.854T0Zv.23q5swXuOZUuPDSA7WaMDtJDwdrpoQOK9onMgzu'),
+('Juan', 'Garcia', NULL, 'juangarcia@gmail.com', '$2b$10$7vqbSyxNxXKD./q58z0RZuvDWEKkSrZmWI.5Z2Pboo19ikB1pSi4G'),
+('Pepito', 'Perez', NULL, 'pepitoperez@gmail.com', '$2b$10$juQg3PVD0aDd0u/NvpA/LO1itY/QADeX7NdHogt84q.7dw0Vy4Hny');
 
 -- ============================================
 -- INSERTS PARA PLATAFORMAS

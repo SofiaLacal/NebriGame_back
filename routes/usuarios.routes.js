@@ -33,14 +33,14 @@ router.post("/login", async (req, res) => {
             }
         });
 
-    /*    const passwordMatch = await bcrypt.compare(contrasenna, usuario.contrasenna);
+        const passwordMatch = await bcrypt.compare(contrasenna, usuario.contrasenna);
         if (!passwordMatch || !usuario) {
             return res.status(401).json({
                 success: false,
                 error: "Credenciales incorrectas"
             });
         }
-*/
+
         if (contrasenna !== usuario.contrasenna) {
             res.status(401).json({
                 success: false,
@@ -65,9 +65,9 @@ router.post("/login", async (req, res) => {
 // ---------------- REGISTRO ----------------
 router.post("/registro", async (req, res) => {
     try {
-        const { nombre, apellido1, apellido2, DNI, email, contrasenna } = req.body;
-        //const hashedPassword = await bcrypt.hash(contrasenna, 10);
-        const datosUsuario = { nombre, apellido1, apellido2, DNI, email, contrasenna };
+        const { nombre, apellido1, apellido2, email, contrasenna } = req.body;
+        const hashedPassword = await bcrypt.hash(contrasenna, 10);
+        const datosUsuario = { nombre, apellido1, apellido2, email, contrasenna: hashedPassword };
         const nuevoUsuario = await Usuario.create(datosUsuario);
         console.log(datosUsuario);
         res.status(201).json({
@@ -76,7 +76,11 @@ router.post("/registro", async (req, res) => {
             usuario: nuevoUsuario
         });
     } catch (error) {
-        res.status(500).json({error});
+        res.status(500).json({
+            success: false,
+            message: "Error en registro",
+            error: error.message
+        });
     }
 });
 

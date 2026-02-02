@@ -14,7 +14,7 @@ CREATE TABLE usuarios (
     email VARCHAR(100) NOT NULL UNIQUE,
     contrasenna VARCHAR(255) NOT NULL,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_usuarios_email (email),
+    INDEX idx_usuarios_email (email)
 );
 
 -- ============================================
