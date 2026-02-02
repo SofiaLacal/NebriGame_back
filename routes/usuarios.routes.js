@@ -33,33 +33,26 @@ router.post("/login", async (req, res) => {
             }
         });
 
-        if (!usuario) {
+    /*    const passwordMatch = await bcrypt.compare(contrasenna, usuario.contrasenna);
+        if (!passwordMatch || !usuario) {
             return res.status(401).json({
                 success: false,
                 error: "Credenciales incorrectas"
             });
         }
-
-        const passwordMatch = await bcrypt.compare(contrasenna, usuario.contrasenna);
-
-        if (!passwordMatch) {
-            return res.status(401).json({
+*/
+        if (contrasenna !== usuario.contrasenna) {
+            res.status(401).json({
                 success: false,
                 error: "Credenciales incorrectas"
             });
+        } else {
+            res.json({
+                success: true,
+                mensaje: "Login correcto",
+                usuario
+            });
         }
-        res.json({
-            success: true,
-            mensaje: "Login correcto",
-            usuario: {
-                id: usuario.id,
-                nombre: usuario.nombre,
-                apellido1: usuario.apellido1,
-                apellido2: usuario.apellido2,
-                DNI: usuario.DNI,
-                email: usuario.email
-            }
-        });
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -73,20 +66,17 @@ router.post("/login", async (req, res) => {
 router.post("/registro", async (req, res) => {
     try {
         const { nombre, apellido1, apellido2, DNI, email, contrasenna } = req.body;
-        const hashedPassword = await bcrypt.hash(contrasenna, 10);
-        const nuevoUsuario = await Usuario.create({ nombre, apellido1, apellido2, DNI, email, contrasenna: hashedPassword });
-
+        //const hashedPassword = await bcrypt.hash(contrasenna, 10);
+        const datosUsuario = { nombre, apellido1, apellido2, DNI, email, contrasenna };
+        const nuevoUsuario = await Usuario.create(datosUsuario);
+        console.log(datosUsuario);
         res.status(201).json({
             success: true,
             mensaje: "Usuario registrado correctamente",
             usuario: nuevoUsuario
         });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al registrar usuario",
-            error: error.message
-        });
+        res.status(500).json({error});
     }
 });
 
