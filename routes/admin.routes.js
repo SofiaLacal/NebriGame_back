@@ -35,6 +35,7 @@ router.put("/productos/:id", async (req, res) => {
         }
 
         await producto.update(req.body);
+        await producto.reload();
 
         res.json({
             success: true,

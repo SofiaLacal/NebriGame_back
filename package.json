@@ -17,9 +17,11 @@
   },
   "homepage": "https://github.com/SofiaLacal/NebriGame_back#readme",
   "dependencies": {
-    "cors": "^2.8.5",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
     "express": "^5.1.0",
     "mysql2": "^3.15.3",
+    "path": "^0.12.7",
     "sequelize": "^6.37.7"
   }
 }

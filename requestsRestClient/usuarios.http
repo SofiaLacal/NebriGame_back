@@ -1,0 +1,181 @@
+// ============================================
+// RUTAS DE USUARIOS
+// ============================================
+
+// GET TODOS LOS USUARIOS
+GET http://localhost:4004/usuarios/
+
+###
+
+// LOGIN
+POST http://localhost:4004/usuarios/login
+Content-Type: application/json
+
+{
+    "email": "juan.garcia@email.com",
+    "contrasenna": "$2b$10$ejemploHashPassword123"
+}
+
+###
+
+// REGISTRO
+POST http://localhost:4004/usuarios/registro
+Content-Type: application/json
+
+{
+    "nombre": "Pablo",
+    "apellido1": "Herrero",
+    "apellido2": "García",
+    "DNI": "51713163D",
+    "email": "pablohgb@gmail.com",
+    "contrasenna": "hola"
+}
+
+###
+
+// PERFIL - OBTENER USUARIO POR ID
+GET http://localhost:4004/usuarios/1
+
+###
+
+// ACTUALIZAR PERFIL
+PUT http://localhost:4004/usuarios/1
+Content-Type: application/json
+
+{
+    "nombre": "Pablo",
+    "apellido1": "Herrero",
+    "apellido2": "García",
+    "DNI": "51713163D",
+    "email": "pablohgb@gmail.com",
+    "contrasenna": "nuevaContrasenna"
+}
+
+###
+
+// ELIMINAR USUARIO
+DELETE http://localhost:4004/usuarios/1
+
+###
+
+// ============================================
+// CARRITO
+// ============================================
+
+// VER CARRITO
+GET http://localhost:4004/usuarios/1/carrito
+
+###
+
+// AÑADIR AL CARRITO
+POST http://localhost:4004/usuarios/1/carrito
+Content-Type: application/json
+
+{
+    "producto_id": 1,
+    "cantidad": 2
+}
+
+###
+
+// ACTUALIZAR CANTIDAD EN CARRITO
+PUT http://localhost:4004/usuarios/1/carrito/1
+Content-Type: application/json
+
+{
+    "cantidad": 3
+}
+
+###
+
+// ELIMINAR DEL CARRITO
+DELETE http://localhost:4004/usuarios/1/carrito/1
+
+###
+
+// COMPLETAR COMPRA (CREAR PEDIDO)
+POST http://localhost:4004/usuarios/1/carrito/comprar
+Content-Type: application/json
+
+{
+    "metodo_pago_id": 1,
+    "direccion_envio": "Calle Principal 123",
+    "codigo_postal": "28001",
+    "ciudad": "Madrid",
+    "telefono_contacto": "+34 600 123 456",
+    "notas": "Entregar por la mañana"
+}
+
+###
+
+// ============================================
+// HISTORIAL DE COMPRAS
+// ============================================
+
+// VER HISTORIAL DE COMPRAS
+GET http://localhost:4004/usuarios/1/historial-compras
+
+###
+
+// ============================================
+// WISHLIST (LISTA DE DESEOS)
+// ============================================
+
+// VER WISHLIST
+GET http://localhost:4004/usuarios/1/wishlist
+
+###
+
+// AÑADIR A WISHLIST
+POST http://localhost:4004/usuarios/1/wishlist
+Content-Type: application/json
+
+{
+    "producto_id": 1
+}
+
+###
+
+// ELIMINAR DE WISHLIST
+DELETE http://localhost:4004/usuarios/1/wishlist/1
+
+###
+
+// ELIMINAR WISHLIST COMPLETA
+DELETE http://localhost:4004/usuarios/1/wishlist
+
+###
+
+// ============================================
+// MÉTODOS DE PAGO
+// ============================================
+
+// VER MÉTODOS DE PAGO
+GET http://localhost:4004/usuarios/1/metodos-pago
+
+###
+
+// AÑADIR MÉTODO DE PAGO
+POST http://localhost:4004/usuarios/1/metodos-pago
+Content-Type: application/json
+
+{
+    "tipo": "Tarjeta de crédito",
+    "detalles": "**** **** **** 1234"
+}
+
+###
+
+// ACTUALIZAR MÉTODO DE PAGO
+PUT http://localhost:4004/usuarios/1/metodos-pago/1
+Content-Type: application/json
+
+{
+    "tipo": "Tarjeta de débito",
+    "detalles": "**** **** **** 5678"
+}
+
+###
+
+// ELIMINAR MÉTODO DE PAGO
+DELETE http://localhost:4004/usuarios/1/metodos-pago/1

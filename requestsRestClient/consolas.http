@@ -1,0 +1,22 @@
+// ============================================
+// RUTAS DE CONSOLAS
+// ============================================
+
+// LISTA DE TODAS LAS CONSOLAS
+GET http://localhost:4004/consolas/
+
+###
+
+// DETALLES DE CONSOLA POR ID
+GET http://localhost:4004/consolas/1
+
+###
+
+// FILTRAR POR PLATAFORMA (ID)
+GET http://localhost:4004/consolas/plataforma/1
+
+###
+
+// FILTRAR POR FABRICANTE
+GET http://localhost:4004/consolas/fabricante/Sony
+

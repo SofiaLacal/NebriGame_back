@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcrypt");
 const { Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto } = require("../models");
 
 // ---------------- TODOS LOS USUARIOS ----------------
@@ -29,7 +30,6 @@ router.post("/login", async (req, res) => {
         const usuario = await Usuario.findOne({
             where: { 
                 email: email,
-                contrasenna: contrasenna 
             }
         });
 
@@ -40,10 +40,25 @@ router.post("/login", async (req, res) => {
             });
         }
 
+        const passwordMatch = await bcrypt.compare(contrasenna, usuario.contrasenna);
+
+        if (!passwordMatch) {
+            return res.status(401).json({
+                success: false,
+                error: "Credenciales incorrectas"
+            });
+        }
         res.json({
             success: true,
             mensaje: "Login correcto",
-            usuario
+            usuario: {
+                id: usuario.id,
+                nombre: usuario.nombre,
+                apellido1: usuario.apellido1,
+                apellido2: usuario.apellido2,
+                DNI: usuario.DNI,
+                email: usuario.email
+            }
         });
     } catch (error) {
         res.status(500).json({
@@ -57,7 +72,9 @@ router.post("/login", async (req, res) => {
 // ---------------- REGISTRO ----------------
 router.post("/registro", async (req, res) => {
     try {
-        const nuevoUsuario = await Usuario.create(req.body);
+        const { nombre, apellido1, apellido2, DNI, email, contrasenna } = req.body;
+        const hashedPassword = await bcrypt.hash(contrasenna, 10);
+        const nuevoUsuario = await Usuario.create({ nombre, apellido1, apellido2, DNI, email, contrasenna: hashedPassword });
 
         res.status(201).json({
             success: true,

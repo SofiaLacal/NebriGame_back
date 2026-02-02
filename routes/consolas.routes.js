@@ -126,11 +126,13 @@ router.get("/fabricante/:fabricante", async (req, res) => {
             }]
         });
 
+        const consolasConImagenes = transformImageUrls(consolas);
+
         res.json({
             success: true,
             total: consolas.length,
             fabricante: fabricante,
-            consolas
+            consolas: consolasConImagenes
         });
     } catch (error) {
         res.status(500).json({

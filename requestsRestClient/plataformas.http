@@ -1,0 +1,12 @@
+// ============================================
+// RUTAS DE PLATAFORMAS
+// ============================================
+
+// LISTA DE TODAS LAS PLATAFORMAS
+GET http://localhost:4004/plataformas/
+
+###
+
+// DETALLES DE PLATAFORMA POR ID
+GET http://localhost:4004/plataformas/1
+

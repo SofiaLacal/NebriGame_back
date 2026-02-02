@@ -1,0 +1,17 @@
+// ============================================
+// RUTAS DE MERCHANDISING
+// ============================================
+
+// LISTA DE TODO EL MERCHANDISING
+GET http://localhost:4004/merchandising/
+
+###
+
+// FILTRAR POR NOMBRE DEL JUEGO
+GET http://localhost:4004/merchandising/juego/witcher
+
+###
+
+// FILTRAR POR CATEGORÍA
+GET http://localhost:4004/merchandising/categoria/camisetas
+
