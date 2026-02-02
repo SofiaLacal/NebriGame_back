@@ -11,12 +11,10 @@ CREATE TABLE usuarios (
     nombre VARCHAR(50) NOT NULL,
     apellido1 VARCHAR(50) NOT NULL,
     apellido2 VARCHAR(50),
-    DNI VARCHAR(9) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     contrasenna VARCHAR(255) NOT NULL,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_usuarios_email (email),
-    INDEX idx_usuarios_dni (DNI)
+    INDEX idx_usuarios_email (email)
 );
 
 -- ============================================

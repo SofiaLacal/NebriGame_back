@@ -23,14 +23,6 @@ const Usuario = sequelize.define('Usuario', {
     type: DataTypes.STRING(50),
     allowNull: true
   },
-  DNI: {
-    type: DataTypes.STRING(9),
-    allowNull: false,
-    unique: true,
-    validate: {
-      is: /^[0-9]{8}[A-Z]$/i // Validación DNI español
-    }
-  },
   email: {
     type: DataTypes.STRING(100),
     allowNull: false,
@@ -52,7 +44,6 @@ const Usuario = sequelize.define('Usuario', {
   timestamps: false, // Usamos fecha_registro manual
   indexes: [
     { fields: ['email'] },
-    { fields: ['DNI'] }
   ]
 });
 
