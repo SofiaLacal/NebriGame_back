@@ -39,13 +39,6 @@ router.post("/login", async (req, res) => {
                 success: false,
                 error: "Credenciales incorrectas"
             });
-        }
-
-        if (contrasenna !== usuario.contrasenna) {
-            res.status(401).json({
-                success: false,
-                error: "Credenciales incorrectas"
-            });
         } else {
             res.json({
                 success: true,
