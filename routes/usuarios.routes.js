@@ -40,10 +40,18 @@ router.post("/login", async (req, res) => {
                 error: "Credenciales incorrectas"
             });
         } else {
+            const usuarioData = {
+                id: usuario.id,
+                nombre: usuario.nombre,
+                apellido1: usuario.apellido1,
+                apellido2: usuario.apellido2,
+                email: usuario.email,
+                fecha_registro: usuario.fecha_registro
+            }
             res.json({
                 success: true,
                 mensaje: "Login correcto",
-                usuario
+                usuarioData
             });
         }
     } catch (error) {
@@ -63,10 +71,19 @@ router.post("/registro", async (req, res) => {
         const datosUsuario = { nombre, apellido1, apellido2, email, contrasenna: hashedPassword };
         const nuevoUsuario = await Usuario.create(datosUsuario);
         console.log(datosUsuario);
+
+        const usuarioData = {
+            id: nuevoUsuario.id,
+            nombre: nuevoUsuario.nombre,
+            apellido1: nuevoUsuario.apellido1,
+            apellido2: nuevoUsuario.apellido2,
+            email: nuevoUsuario.email,
+            fecha_registro: nuevoUsuario.fecha_registro
+        }
         res.status(201).json({
             success: true,
             mensaje: "Usuario registrado correctamente",
-            usuario: nuevoUsuario
+            usuario: usuarioData
         });
     } catch (error) {
         res.status(500).json({

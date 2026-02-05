@@ -102,4 +102,36 @@ router.get("/contacto", (req, res) => {
     });
 });
 
+// ---------------- OBTENER UN PRODUCTO POR ID ----------------
+router.get("/producto/:id", async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const producto = await Producto.findOne({
+            where: { 
+                id: id
+            },
+            include: [
+                { model: Juego, as: 'juego', required: false },
+                { model: Consola, as: 'consola', required: false },
+                { model: Merchandising, as: 'merchandising', required: false }
+            ]
+        });
+        if (!producto) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado"
+            });
+        }
+        res.json({
+            success: true,
+            producto
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener producto",
+            error: error.message
+        });
+    }
+});
 module.exports = router;
