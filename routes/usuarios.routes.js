@@ -121,11 +121,37 @@ router.get("/:userId", async (req, res) => {
 });
 
 // ---------------- ACTUALIZAR PERFIL ----------------
-router.put("/:userId", async (req, res) => {
+router.patch("/:userId", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const usuario = await Usuario.findByPk(userId);
+        const { nombre, apellido1, apellido2, email, contrasenna, contrasennaActual } = req.body;
 
+        if (contrasenna && contrasennaActual) {
+            const passwordMatch = await bcrypt.compare(contrasennaActual, usuario.contrasenna);
+            if (!passwordMatch) {
+                return res.status(401).json({
+                    success: false,
+                    error: "Contraseña incorrecta"
+                });
+            }
+            const hashedPassword = await bcrypt.hash(contrasenna, 10);
+            req.body.contrasenna = hashedPassword;
+            
+        }
+
+        if (nombre) {
+            req.body.nombre = nombre;
+        }
+        if (apellido1) {
+            req.body.apellido1 = apellido1;
+        }
+        if (apellido2) {
+            req.body.apellido2 = apellido2;
+        }
+        if (email) {
+            req.body.email = email;
+        }
         if (!usuario) {
             return res.status(404).json({
                 success: false,
