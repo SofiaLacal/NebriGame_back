@@ -147,6 +147,21 @@ CREATE TABLE wishlist (
 );
 
 -- ============================================
+-- TABLA DIRECCIONES
+-- ============================================
+CREATE TABLE direcciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    calle VARCHAR(255) NOT NULL,
+    numero_casa VARCHAR(20) NOT NULL,
+    ciudad VARCHAR(100) NOT NULL,
+    codigo_postal VARCHAR(10) NOT NULL,
+    region VARCHAR(20) NOT NULL DEFAULT 'peninsula',
+    telefono_contacto VARCHAR(20) NOT NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    INDEX idx_direcciones_usuario (usuario_id)
+);
+-- ============================================
 -- TABLA PEDIDOS
 -- ============================================
 CREATE TABLE pedidos (
@@ -157,12 +172,11 @@ CREATE TABLE pedidos (
     estado ENUM('pendiente', 'procesando', 'enviado', 'entregado', 'cancelado') NOT NULL DEFAULT 'pendiente',
     fecha_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    direccion_envio VARCHAR(255) NOT NULL,
-    codigo_postal VARCHAR(10),
-    ciudad VARCHAR(100),
+    direccion_id INT NOT NULL,
     telefono_contacto VARCHAR(20) NOT NULL,
     notas TEXT,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL,
+    FOREIGN KEY (direccion_id) REFERENCES direcciones(id) ON DELETE CASCADE,
     FOREIGN KEY (metodo_pago_id) REFERENCES metodo_pago(id) ON DELETE SET NULL,
     CONSTRAINT chk_total_positivo CHECK (total >= 0),
     INDEX idx_pedidos_usuario (usuario_id),
@@ -188,6 +202,7 @@ CREATE TABLE pedidos_productos (
     INDEX idx_pedidos_productos_pedido (pedido_id),
     INDEX idx_pedidos_productos_producto (producto_id)
 );
+
 
 -- ============================================
 -- TRIGGERS DE VALIDACIÓN

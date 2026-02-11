@@ -184,6 +184,19 @@ INSERT INTO merchandising (producto_id, categoria) VALUES
 (30, 'Accesorios');     -- Set Pins
 
 -- ============================================
+-- INSERTS PARA DIRECCIONES
+-- ============================================
+INSERT INTO direcciones (usuario_id, calle, numero_casa, ciudad, codigo_postal, region, telefono_contacto) VALUES
+(1, 'Calle Gran Vía', '45', 'Madrid', '28013', 'peninsula', '612345678'),
+(1, 'Paseo de Gracia', '92', 'Barcelona', '08008', 'peninsula', '623456789'),
+(2, 'Avenida del Puerto', '12', 'Valencia', '46021', 'peninsula', '634567890'),
+(3, 'Calle Sierpes', '28', 'Sevilla', '41004', 'peninsula', '645678901'),
+(4, 'Gran Vía de Don Diego López de Haro', '66', 'Bilbao', '48011', 'peninsula', '656789012'),
+(5, 'Calle Mayor', '15', 'Zaragoza', '50001', 'peninsula', '667890123'),
+(6, 'Calle León y Castillo', '234', 'Las Palmas de Gran Canaria', '35005', 'canarias', '678901234'),
+(2, 'Calle Colón', '8', 'Valencia', '46004', 'peninsula', '689012345');
+
+-- ============================================
 -- INSERTS PARA MÉTODOS DE PAGO
 -- ============================================
 INSERT INTO metodo_pago (tipo, detalles, usuario_id) VALUES
@@ -237,14 +250,15 @@ INSERT INTO wishlist (usuario_id, producto_id) VALUES
 -- ============================================
 -- INSERTS PARA PEDIDOS
 -- ============================================
-INSERT INTO pedidos (usuario_id, metodo_pago_id, total, estado, direccion_envio, codigo_postal, ciudad, telefono_contacto, notas) VALUES
-(1, 1, 609.98, 'entregado', 'Calle Mayor 123', '28013', 'Madrid', '612345678', 'Entregar en horario de tarde'),
-(2, 3, 99.98, 'enviado', 'Avenida Principal 45', '08015', 'Barcelona', '623456789', NULL),
-(3, 4, 109.98, 'procesando', 'Plaza Central 7', '46003', 'Valencia', '634567890', 'Urgente'),
-(4, 5, 409.98, 'pendiente', 'Calle Nueva 12', '41004', 'Sevilla', '645678901', NULL),
-(1, 2, 24.99, 'entregado', 'Calle Mayor 123', '28013', 'Madrid', '612345678', NULL),
-(5, 7, 129.97, 'enviado', 'Paseo de la Castellana 89', '28046', 'Madrid', '656789012', 'Llamar antes de entregar'),
-(6, 8, 449.98, 'procesando', 'Calle Gran Vía 55', '28013', 'Madrid', '667890123', NULL);
+-- (direccion_id referencia direcciones: 1=Madrid, 3=Valencia, 4=Sevilla, 5=Bilbao, 6=Zaragoza, 7=Las Palmas)
+INSERT INTO pedidos (usuario_id, metodo_pago_id, total, estado, direccion_id, telefono_contacto, notas) VALUES
+(1, 1, 609.98, 'entregado', 1, '612345678', 'Entregar en horario de tarde'),
+(2, 3, 99.98, 'enviado', 3, '623456789', NULL),
+(3, 4, 109.98, 'procesando', 4, '634567890', 'Urgente'),
+(4, 5, 409.98, 'pendiente', 5, '645678901', NULL),
+(1, 2, 24.99, 'entregado', 1, '612345678', NULL),
+(5, 7, 129.97, 'enviado', 6, '656789012', 'Llamar antes de entregar'),
+(6, 8, 449.98, 'procesando', 7, '667890123', NULL);
 
 -- ============================================
 -- INSERTS PARA PEDIDOS_PRODUCTOS

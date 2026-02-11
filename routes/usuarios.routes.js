@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
-const { Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto } = require("../models");
+const { Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion } = require("../models");
 
 // ---------------- TODOS LOS USUARIOS ----------------
 router.get("/", async (req, res) => {
@@ -132,7 +132,7 @@ router.put("/:userId", async (req, res) => {
                 error: "Usuario no encontrado"
             });
         }
-
+        
         await usuario.update(req.body);
 
         res.json({
@@ -208,6 +208,42 @@ router.get("/:userId/carrito", async (req, res) => {
     }
 });
 
+// Ver si un producto está en el carrito
+router.get("/:userId/carrito/:productoId", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const productoId = parseInt(req.params.productoId);
+        if (!userId || !productoId) {
+            return res.status(400).json({
+                success: false,
+                error: "Usuario o producto no encontrado"
+            });
+        }
+        const item = await Carrito.findOne({
+            where: {
+                usuario_id: userId,
+                producto_id: productoId
+            }
+        });
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado en el carrito"
+            });
+        }
+        return res.json({
+            success: true,
+            item: true
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al verificar si el producto está en el carrito",
+            error: error.message
+        });
+    }
+});
 // Añadir al carrito
 router.post("/:userId/carrito", async (req, res) => {
     try {
@@ -553,6 +589,112 @@ router.delete("/:userId/wishlist", async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error al eliminar wishlist",
+            error: error.message
+        });
+    }
+});
+
+// ============================================
+// DIRECCIONES
+// ============================================
+
+// Ver direcciones
+router.get("/:userId/direcciones", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+
+        const direcciones = await Direccion.findAll({
+            where: { usuario_id: userId }
+        });
+
+        const direccionesFormateadas = direcciones.map((d) => ({
+            id: d.id,
+            calle: d.calle,
+            numeroCasa: d.numero_casa,
+            ciudad: d.ciudad,
+            codigoPostal: d.codigo_postal,
+            region: d.region,
+            telefonoContacto: d.telefono_contacto
+        }));
+
+        res.json({
+            success: true,
+            total: direccionesFormateadas.length,
+            direcciones: direccionesFormateadas
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener direcciones",
+            error: error.message
+        });
+    }
+});
+
+// Añadir dirección
+router.post("/:userId/direcciones", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const { region, ciudad, codigoPostal, calle, numeroCasa, telefono } = req.body;
+
+        if (!ciudad || !codigoPostal || !calle || !numeroCasa || !telefono) {
+            return res.status(400).json({
+                success: false,
+                error: "Faltan campos obligatorios (ciudad, codigoPostal, calle, numeroCasa, telefono)"
+            });
+        }
+
+        const nuevaDireccion = await Direccion.create({
+            usuario_id: userId,
+            calle,
+            numero_casa: numeroCasa,
+            ciudad,
+            codigo_postal: codigoPostal,
+            region: region || 'peninsula',
+            telefono_contacto: telefono
+        });
+
+        res.status(201).json({
+            success: true,
+            mensaje: "Dirección añadida",
+            direccion: nuevaDireccion
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al añadir dirección",
+            error: error.message
+        });
+    }
+});
+
+// Eliminar dirección
+router.delete("/:userId/direcciones/:direccionId", async (req, res) => {
+    try {
+        const { userId, direccionId } = req.params;
+
+        const resultado = await Direccion.destroy({
+            where: {
+                id: direccionId,
+                usuario_id: userId
+            }
+        });
+
+        if (resultado === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "Dirección no encontrada"
+            });
+        }
+
+        res.json({
+            success: true,
+            mensaje: "Dirección eliminada"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al eliminar dirección",
             error: error.message
         });
     }

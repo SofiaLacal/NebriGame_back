@@ -17,6 +17,7 @@ const Carrito = require('./Carrito');
 const Wishlist = require('./Wishlist');
 const Pedido = require('./Pedido');
 const PedidoProducto = require('./PedidoProducto');
+const Direccion = require('./Direccion');
 /* const VistaProductosCompleta = require('./VistaProductosCompleta'); */
 const VistaResumenPedidos = require('./VistaResumenPedidos');
 
@@ -31,6 +32,16 @@ Usuario.hasMany(MetodoPago, {
   as: 'metodosPago'
 });
 MetodoPago.belongsTo(Usuario, {
+  foreignKey: 'usuario_id',
+  as: 'usuario'
+});
+
+// Usuario - Direccion (1:N)
+Usuario.hasMany(Direccion, {
+  foreignKey: 'usuario_id',
+  as: 'direcciones'
+});
+Direccion.belongsTo(Usuario, {
   foreignKey: 'usuario_id',
   as: 'usuario'
 });
@@ -190,6 +201,7 @@ module.exports = {
   Wishlist,
   Pedido,
   PedidoProducto,
+  Direccion,
 /*   VistaProductosCompleta, */
   VistaResumenPedidos
 };
