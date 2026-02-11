@@ -125,41 +125,45 @@ router.patch("/:userId", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const usuario = await Usuario.findByPk(userId);
-        const { nombre, apellido1, apellido2, email, contrasenna, contrasennaActual } = req.body;
 
-        if (contrasenna && contrasennaActual) {
-            const passwordMatch = await bcrypt.compare(contrasennaActual, usuario.contrasenna);
-            if (!passwordMatch) {
-                return res.status(401).json({
-                    success: false,
-                    error: "Contraseña incorrecta"
-                });
-            }
-            const hashedPassword = await bcrypt.hash(contrasenna, 10);
-            req.body.contrasenna = hashedPassword;
-            
-        }
-
-        if (nombre) {
-            req.body.nombre = nombre;
-        }
-        if (apellido1) {
-            req.body.apellido1 = apellido1;
-        }
-        if (apellido2) {
-            req.body.apellido2 = apellido2;
-        }
-        if (email) {
-            req.body.email = email;
-        }
         if (!usuario) {
             return res.status(404).json({
                 success: false,
                 error: "Usuario no encontrado"
             });
         }
-        
-        await usuario.update(req.body);
+
+        const { nombre, apellido1, apellido2, email, contrasenna, contrasennaActual } = req.body;
+
+        const updateData = {};
+        if (nombre) updateData.nombre = nombre;
+        if (apellido1) updateData.apellido1 = apellido1;
+        if (apellido2 !== undefined) updateData.apellido2 = apellido2;
+        if (email) updateData.email = email;
+        if (contrasennaActual && !contrasenna) {
+            return res.status(400).json({
+                success: false,
+                error: "Debes indicar la contraseña nueva para cambiarla"
+            });
+        }
+        if (contrasenna) {
+            if (!contrasennaActual) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Debes indicar la contraseña actual para cambiarla"
+                });
+            }
+            const passwordMatch = await bcrypt.compare(contrasennaActual, usuario.contrasenna);
+            if (!passwordMatch) {
+                return res.status(401).json({
+                    success: false,
+                    error: "Contraseña actual incorrecta"
+                });
+            }
+            updateData.contrasenna = await bcrypt.hash(contrasenna, 10);
+        }
+
+        await usuario.update(updateData);
 
         res.json({
             success: true,
