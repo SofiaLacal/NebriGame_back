@@ -82,6 +82,16 @@ Pedido.belongsTo(MetodoPago, {
   as: 'metodoPago'
 });
 
+// Pedido - Direccion (N:1)
+Pedido.belongsTo(Direccion, {
+  foreignKey: 'direccion_id',
+  as: 'direccion'
+});
+Direccion.hasMany(Pedido, {
+  foreignKey: 'direccion_id',
+  as: 'pedidos'
+});
+
 // Producto - Carrito (1:N)
 Producto.hasMany(Carrito, {
   foreignKey: 'producto_id',

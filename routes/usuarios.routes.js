@@ -487,14 +487,20 @@ router.get("/:userId/historial-compras", async (req, res) => {
 
         const pedidos = await Pedido.findAll({
             where: { usuario_id: userId },
-            include: [{
-                model: PedidoProducto,
-                as: 'detalles',
-                include: [{
-                    model: Producto,
-                    as: 'producto'
-                }]
-            }],
+            include: [
+                {
+                    model: PedidoProducto,
+                    as: 'detalles',
+                    include: [{
+                        model: Producto,
+                        as: 'producto'
+                    }]
+                },
+                {
+                    model: Direccion,
+                    as: 'direccion'
+                }
+            ],
             order: [['fecha_pedido', 'DESC']]
         });
 
@@ -504,11 +510,20 @@ router.get("/:userId/historial-compras", async (req, res) => {
             fecha: pedido.fecha_pedido,
             total: parseFloat(pedido.total).toFixed(2),
             estado: pedido.estado,
+            telefono_contacto: pedido.telefono_contacto,
             productos: pedido.detalles.map(detalle => ({
                 nombre: detalle.producto.nombre,
                 cantidad: detalle.cantidad,
                 precio: parseFloat(detalle.precio_unitario).toFixed(2)
-            }))
+            })),
+            envio: pedido.direccion ? {
+                calle: pedido.direccion.calle,
+                numeroCasa: pedido.direccion.numero_casa,
+                ciudad: pedido.direccion.ciudad,
+                codigoPostal: pedido.direccion.codigo_postal,
+                region: pedido.direccion.region,
+                telefono: pedido.telefono_contacto || pedido.direccion.telefono_contacto
+            } : null
         }));
 
         res.json({
@@ -532,7 +547,7 @@ router.get("/:userId/historial-compras", async (req, res) => {
 router.post("/:userId/pedidos", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
-        const { productos, total, direccion, estado, fecha } = req.body;
+        const { productos, total, direccion, estado, fecha, metodo_pago_id } = req.body;
 
         if (!productos || productos.length === 0) {
             return res.status(400).json({
@@ -569,13 +584,31 @@ router.post("/:userId/pedidos", async (req, res) => {
             });
         }
 
+        if (!metodo_pago_id) {
+            return res.status(400).json({
+                success: false,
+                error: "Se requiere un método de pago"
+            });
+        }
+
+        // Verificar que el método de pago pertenece al usuario
+        const metodoPago = await MetodoPago.findOne({
+            where: { id: metodo_pago_id, usuario_id: userId }
+        });
+        if (!metodoPago) {
+            return res.status(400).json({
+                success: false,
+                error: "Método de pago no válido"
+            });
+        }
+
         // Crear el pedido
         const nuevoPedido = await Pedido.create({
             usuario_id: userId,
             total: parseFloat(total),
             direccion_id: direccionId,
             telefono_contacto: telefono,
-            metodo_pago_id: null,
+            metodo_pago_id,
             estado: estado || 'pendiente',
             fecha_pedido: fecha || new Date()
         });
