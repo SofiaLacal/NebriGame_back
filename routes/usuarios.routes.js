@@ -100,6 +100,14 @@ router.get("/:userId", async (req, res) => {
         const userId = parseInt(req.params.userId);
         const usuario = await Usuario.findByPk(userId);
 
+        const usuarioData = {
+            id: usuario.id,
+            nombre: usuario.nombre,
+            apellido1: usuario.apellido1,
+            apellido2: usuario.apellido2,
+            email: usuario.email,
+            fecha_registro: usuario.fecha_registro
+        }
         if (!usuario) {
             return res.status(404).json({
                 success: false,
@@ -109,7 +117,7 @@ router.get("/:userId", async (req, res) => {
 
         res.json({
             success: true,
-            usuario
+            usuario: usuarioData
         });
     } catch (error) {
         res.status(500).json({
@@ -163,12 +171,19 @@ router.patch("/:userId", async (req, res) => {
             updateData.contrasenna = await bcrypt.hash(contrasenna, 10);
         }
 
-        await usuario.update(updateData);
-
+        const usuarioActualizado = await usuario.update(updateData);
+        const usuarioData = {
+            id: usuarioActualizado.id,
+            nombre: usuarioActualizado.nombre,
+            apellido1: usuarioActualizado.apellido1,
+            apellido2: usuarioActualizado.apellido2,
+            email: usuarioActualizado.email,
+            fecha_registro: usuarioActualizado.fecha_registro
+        }
         res.json({
             success: true,
             mensaje: "Perfil actualizado",
-            usuario
+            usuario: usuarioData
         });
     } catch (error) {
         res.status(500).json({
