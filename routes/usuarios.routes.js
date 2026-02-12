@@ -32,9 +32,14 @@ router.post("/login", async (req, res) => {
                 email: email,
             }
         });
-
+        if (!usuario) {
+            return res.status(401).json({
+                success: false,
+                error: "Credenciales incorrectas"
+            });
+        }
         const passwordMatch = await bcrypt.compare(contrasenna, usuario.contrasenna);
-        if (!passwordMatch || !usuario) {
+        if (!passwordMatch) {
             return res.status(401).json({
                 success: false,
                 error: "Credenciales incorrectas"
@@ -197,7 +202,13 @@ router.patch("/:userId", async (req, res) => {
 // ---------------- ELIMINAR USUARIO ----------------
 router.delete("/:userId", async (req, res) => {
     try {
-        const userId = parseInt(req.params.userId);
+        const userId = parseInt(req.params.userId, 10);
+        if (isNaN(userId) || userId <= 0) {
+            return res.status(400).json({
+                success: false,
+                error: "ID de usuario no válido"
+            });
+        }
         const usuario = await Usuario.findByPk(userId);
 
         if (!usuario) {

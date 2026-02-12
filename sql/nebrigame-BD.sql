@@ -161,6 +161,7 @@ CREATE TABLE direcciones (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     INDEX idx_direcciones_usuario (usuario_id)
 );
+
 -- ============================================
 -- TABLA PEDIDOS
 -- ============================================
