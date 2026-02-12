@@ -274,6 +274,7 @@ router.get("/:userId/carrito/:productoId", async (req, res) => {
         });
     }
 });
+
 // Añadir al carrito
 router.post("/:userId/carrito", async (req, res) => {
     try {
@@ -478,22 +479,118 @@ router.get("/:userId/historial-compras", async (req, res) => {
                     model: Producto,
                     as: 'producto'
                 }]
-            }, {
-                model: MetodoPago,
-                as: 'metodoPago'
             }],
             order: [['fecha_pedido', 'DESC']]
         });
 
+        // Formatear para el frontend
+        const pedidosFormateados = pedidos.map(pedido => ({
+            id: pedido.id,
+            fecha: pedido.fecha_pedido,
+            total: parseFloat(pedido.total).toFixed(2),
+            estado: pedido.estado,
+            productos: pedido.detalles.map(detalle => ({
+                nombre: detalle.producto.nombre,
+                cantidad: detalle.cantidad,
+                precio: parseFloat(detalle.precio_unitario).toFixed(2)
+            }))
+        }));
+
         res.json({
             success: true,
-            total: pedidos.length,
-            historial: pedidos
+            total: pedidosFormateados.length,
+            pedidos: pedidosFormateados
         });
     } catch (error) {
+        console.error('Error al obtener historial:', error);
         res.status(500).json({
             success: false,
             message: "Error al obtener historial",
+            error: error.message
+        });
+    }
+});
+
+// ============================================
+// CREAR PEDIDO DIRECTO
+// ============================================
+router.post("/:userId/pedidos", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const { productos, total, direccion, estado, fecha } = req.body;
+
+        if (!productos || productos.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: "No hay productos en el pedido"
+            });
+        }
+
+        // Obtener teléfono de la dirección o usar uno por defecto
+        const telefono = direccion?.telefono || direccion?.telefonoContacto || '000000000';
+        
+        // Obtener o crear direccion_id
+        let direccionId = direccion?.id;
+        
+        // Si no hay ID de dirección, crear una nueva (temporal)
+        if (!direccionId && direccion) {
+            const nuevaDireccion = await Direccion.create({
+                usuario_id: userId,
+                calle: direccion.calle || 'Sin especificar',
+                numero_casa: direccion.numeroCasa || 'S/N',
+                ciudad: direccion.ciudad || 'Sin especificar',
+                codigo_postal: direccion.codigoPostal || '00000',
+                region: direccion.region || 'peninsula',
+                telefono_contacto: telefono
+            });
+            direccionId = nuevaDireccion.id;
+        }
+        
+        // Si aún no hay direccion_id, usar una por defecto o fallar
+        if (!direccionId) {
+            return res.status(400).json({
+                success: false,
+                error: "Se requiere una dirección de envío"
+            });
+        }
+
+        // Crear el pedido
+        const nuevoPedido = await Pedido.create({
+            usuario_id: userId,
+            total: parseFloat(total),
+            direccion_id: direccionId,
+            telefono_contacto: telefono,
+            metodo_pago_id: null,
+            estado: estado || 'pendiente',
+            fecha_pedido: fecha || new Date()
+        });
+
+        // Crear los detalles del pedido
+        for (const prod of productos) {
+            await PedidoProducto.create({
+                pedido_id: nuevoPedido.id,
+                producto_id: prod.producto_id,
+                cantidad: prod.cantidad,
+                precio_unitario: parseFloat(prod.precio),
+                subtotal: parseFloat(prod.precio) * prod.cantidad
+            });
+        }
+
+        // Vaciar el carrito
+        await Carrito.destroy({
+            where: { usuario_id: userId }
+        });
+
+        res.status(201).json({
+            success: true,
+            mensaje: "Pedido creado correctamente",
+            pedido: nuevoPedido
+        });
+    } catch (error) {
+        console.error('Error al crear pedido:', error);
+        res.status(500).json({
+            success: false,
+            message: "Error al crear pedido",
             error: error.message
         });
     }

@@ -1,5 +1,5 @@
 // ============================================
-// MODELO: PEDIDO
+// MODELO: PEDIDO (CORREGIDO SEGÚN BD)
 // ============================================
 
 const { DataTypes } = require('sequelize');
@@ -47,17 +47,13 @@ const Pedido = sequelize.define('Pedido', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   },
-  direccion_envio: {
-    type: DataTypes.STRING(255),
-    allowNull: false
-  },
-  codigo_postal: {
-    type: DataTypes.STRING(10),
-    allowNull: true
-  },
-  ciudad: {
-    type: DataTypes.STRING(100),
-    allowNull: true
+  direccion_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'direcciones',
+      key: 'id'
+    }
   },
   telefono_contacto: {
     type: DataTypes.STRING(20),
