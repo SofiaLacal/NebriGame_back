@@ -47,19 +47,16 @@ CREATE TABLE productos (
     nombre VARCHAR(100) NOT NULL,
     precio DECIMAL(10, 2) NOT NULL,
     descripcion TEXT,
-    stock INT NOT NULL DEFAULT 0,
     tipo ENUM('merchandising', 'juego', 'consola') NOT NULL,
     imagen_url VARCHAR(255),
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- Constraints
     CONSTRAINT chk_tipo_producto CHECK (tipo IN ('merchandising', 'juego', 'consola')),
-    CONSTRAINT chk_stock_positivo CHECK (stock >= 0),
     CONSTRAINT chk_precio_positivo CHECK (precio >= 0),
     -- Índices
     INDEX idx_productos_tipo (tipo),
     INDEX idx_productos_precio (precio),
-    INDEX idx_productos_nombre (nombre),
-    INDEX idx_productos_stock (stock)
+    INDEX idx_productos_nombre (nombre)
 );
 
 -- ============================================
@@ -68,7 +65,9 @@ CREATE TABLE productos (
 CREATE TABLE merchandising (
     producto_id INT PRIMARY KEY,
     categoria VARCHAR(50) NOT NULL,
+    control_stock INT NOT NULL DEFAULT 0,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
+    CONSTRAINT chk_merchandising_stock CHECK (control_stock >= 0),
     INDEX idx_merchandising_categoria (categoria)
 );
 
@@ -92,7 +91,9 @@ CREATE TABLE juegos_plataformas (
     juego_id INT NOT NULL,
     plataforma_id INT NOT NULL,
     fecha_lanzamiento DATE,
+    control_stock INT NOT NULL DEFAULT 0,
     PRIMARY KEY (juego_id, plataforma_id),
+    CONSTRAINT chk_jp_stock CHECK (control_stock >= 0),
     FOREIGN KEY (juego_id) REFERENCES juegos(producto_id) ON DELETE CASCADE,
     FOREIGN KEY (plataforma_id) REFERENCES plataforma(id) ON DELETE CASCADE,
     INDEX idx_juegos_plataformas_juego (juego_id),
@@ -108,7 +109,9 @@ CREATE TABLE consolas (
     color VARCHAR(50),
     fabricante VARCHAR(100) NOT NULL,
     plataforma_id INT NOT NULL,
+    control_stock INT NOT NULL DEFAULT 0,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
+    CONSTRAINT chk_consolas_stock CHECK (control_stock >= 0),
     FOREIGN KEY (plataforma_id) REFERENCES plataforma(id) ON DELETE RESTRICT,
     INDEX idx_consolas_plataforma (plataforma_id),
     INDEX idx_consolas_fabricante (fabricante)
@@ -285,18 +288,53 @@ BEGIN
     END IF;
 END$$
 
--- Trigger para validar stock antes de agregar al carrito
-CREATE TRIGGER trg_validar_stock_carrito
+-- Trigger para validar stock antes de agregar/actualizar en carrito
+-- Stock: merchandising y consolas en su tabla; juegos en juegos_plataformas (suma por plataforma)
+CREATE TRIGGER trg_validar_stock_carrito_insert
 BEFORE INSERT ON carrito
 FOR EACH ROW
 BEGIN
-    DECLARE stock_actual INT;
+    DECLARE stock_disponible INT DEFAULT 0;
+    DECLARE producto_tipo VARCHAR(20);
     
-    SELECT stock INTO stock_actual FROM productos WHERE id = NEW.producto_id;
+    SELECT tipo INTO producto_tipo FROM productos WHERE id = NEW.producto_id;
     
-    IF stock_actual < NEW.cantidad THEN
+    IF producto_tipo = 'merchandising' THEN
+        SELECT control_stock INTO stock_disponible FROM merchandising WHERE producto_id = NEW.producto_id;
+    ELSEIF producto_tipo = 'consola' THEN
+        SELECT control_stock INTO stock_disponible FROM consolas WHERE producto_id = NEW.producto_id;
+    ELSEIF producto_tipo = 'juego' THEN
+        SELECT COALESCE(SUM(control_stock), 0) INTO stock_disponible 
+        FROM juegos_plataformas WHERE juego_id = NEW.producto_id;
+    END IF;
+    
+    IF stock_disponible < NEW.cantidad THEN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'Stock insuficiente para agregar al carrito';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_validar_stock_carrito_update
+BEFORE UPDATE ON carrito
+FOR EACH ROW
+BEGIN
+    DECLARE stock_disponible INT DEFAULT 0;
+    DECLARE producto_tipo VARCHAR(20);
+    
+    SELECT tipo INTO producto_tipo FROM productos WHERE id = NEW.producto_id;
+    
+    IF producto_tipo = 'merchandising' THEN
+        SELECT control_stock INTO stock_disponible FROM merchandising WHERE producto_id = NEW.producto_id;
+    ELSEIF producto_tipo = 'consola' THEN
+        SELECT control_stock INTO stock_disponible FROM consolas WHERE producto_id = NEW.producto_id;
+    ELSEIF producto_tipo = 'juego' THEN
+        SELECT COALESCE(SUM(control_stock), 0) INTO stock_disponible 
+        FROM juegos_plataformas WHERE juego_id = NEW.producto_id;
+    END IF;
+    
+    IF stock_disponible < NEW.cantidad THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Stock insuficiente para la cantidad solicitada';
     END IF;
 END$$
 
@@ -321,7 +359,6 @@ DELIMITER ;
 -- ============================================
 -- ÍNDICES ADICIONALES PARA OPTIMIZACIÓN
 -- ============================================
-CREATE INDEX idx_productos_tipo_stock ON productos(tipo, stock);
 CREATE INDEX idx_pedidos_usuario_estado ON pedidos(usuario_id, estado);
 CREATE INDEX idx_pedidos_fecha_estado ON pedidos(fecha_pedido, estado);
 
@@ -355,7 +392,7 @@ SELECT
     p.nombre,
     p.precio,
     p.descripcion,
-    p.stock,
+    COALESCE(m.control_stock, c.control_stock, (SELECT SUM(jp.control_stock) FROM juegos_plataformas jp WHERE jp.juego_id = p.id)) AS stock,
     p.tipo,
     p.imagen_url,
     -- Datos específicos de juegos

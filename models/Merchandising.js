@@ -17,6 +17,14 @@ const Merchandising = sequelize.define('Merchandising', {
   categoria: {
     type: DataTypes.STRING(50),
     allowNull: false
+  },
+  control_stock: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+    validate: {
+      min: 0
+    }
   }
 }, {
   tableName: 'merchandising',

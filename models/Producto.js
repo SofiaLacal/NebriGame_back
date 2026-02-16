@@ -26,14 +26,6 @@ const Producto = sequelize.define('Producto', {
     type: DataTypes.TEXT,
     allowNull: true
   },
-  stock: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-    validate: {
-      min: 0
-    }
-  },
   tipo: {
     type: DataTypes.ENUM('merchandising', 'juego', 'consola'),
     allowNull: false
@@ -52,9 +44,7 @@ const Producto = sequelize.define('Producto', {
   indexes: [
     { fields: ['tipo'] },
     { fields: ['precio'] },
-    { fields: ['nombre'] },
-    { fields: ['stock'] },
-    { fields: ['tipo', 'stock'] }
+    { fields: ['nombre'] }
   ]
 });
 

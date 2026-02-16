@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Producto, Juego, Consola, Merchandising } = require("../models");
+const { Producto, Juego, Consola, Merchandising, JuegoPlataforma, Plataforma } = require("../models");
 const { Op } = require("sequelize");
 
 // ---------------- HOME ----------------
@@ -134,4 +134,67 @@ router.get("/producto/:id", async (req, res) => {
         });
     }
 });
+
+// ---------------- STOCK DE UN PRODUCTO ----------------
+router.get("/producto/:id/stock", async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const producto = await Producto.findByPk(id);
+        if (!producto) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado"
+            });
+        }
+        let stock = 0;
+        let plataformas = null;
+        switch (producto.tipo) {
+            case "merchandising": {
+                const m = await Merchandising.findOne({ where: { producto_id: id } });
+                stock = m ? m.control_stock : 0;
+                break;
+            }
+            case "consola": {
+                const c = await Consola.findOne({ where: { producto_id: id } });
+                stock = c ? c.control_stock : 0;
+                break;
+            }
+            case "juego": {
+                const jp = await JuegoPlataforma.findAll({
+                    where: { juego_id: id },
+                    attributes: ["plataforma_id", "control_stock"]
+                });
+                if (jp.length > 0) {
+                    const plataformaIds = [...new Set(jp.map(r => r.plataforma_id))];
+                    const plataformasList = await Plataforma.findAll({
+                        where: { id: plataformaIds },
+                        attributes: ["id", "nombre"]
+                    });
+                    const nombreById = Object.fromEntries(plataformasList.map(p => [p.id, p.nombre]));
+                    plataformas = jp.map(row => ({
+                        id: row.plataforma_id,
+                        nombre: nombreById[row.plataforma_id] || "",
+                        control_stock: row.control_stock || 0
+                    }));
+                }
+                stock = jp.reduce((sum, row) => sum + (row.control_stock || 0), 0);
+                break;
+            }
+            default:
+                break;
+        }
+        res.json({
+            success: true,
+            stock,
+            plataformas
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al obtener stock",
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

@@ -1,7 +1,56 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
-const { Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion } = require("../models");
+const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma } = require("../models");
+
+// Helpers para control de stock
+async function getStockDisponible(productoId) {
+    const producto = await Producto.findByPk(productoId);
+    if (!producto) return 0;
+    switch (producto.tipo) {
+        case 'merchandising':
+            const m = await Merchandising.findOne({ where: { producto_id: productoId } });
+            return m ? m.control_stock : 0;
+        case 'consola':
+            const c = await Consola.findOne({ where: { producto_id: productoId } });
+            return c ? c.control_stock : 0;
+        case 'juego':
+            const jp = await JuegoPlataforma.findAll({ where: { juego_id: productoId } });
+            return jp.reduce((sum, row) => sum + (row.control_stock || 0), 0);
+        default:
+            return 0;
+    }
+}
+
+async function reducirStock(productoId, cantidad, transaction = null) {
+    const opts = transaction ? { transaction } : {};
+    const producto = await Producto.findByPk(productoId);
+    if (!producto || cantidad <= 0) return;
+    switch (producto.tipo) {
+        case 'merchandising':
+            await Merchandising.decrement('control_stock', { by: cantidad, where: { producto_id: productoId }, ...opts });
+            break;
+        case 'consola':
+            await Consola.decrement('control_stock', { by: cantidad, where: { producto_id: productoId }, ...opts });
+            break;
+        case 'juego':
+            let restante = cantidad;
+            const plataformas = await JuegoPlataforma.findAll({ where: { juego_id: productoId }, order: [['plataforma_id']], ...opts });
+            for (const jp of plataformas) {
+                if (restante <= 0) break;
+                const reducir = Math.min(jp.control_stock, restante);
+                if (reducir > 0) {
+                    await JuegoPlataforma.decrement('control_stock', {
+                        by: reducir,
+                        where: { juego_id: productoId, plataforma_id: jp.plataforma_id },
+                        ...opts
+                    });
+                    restante -= reducir;
+                }
+            }
+            break;
+    }
+}
 
 // ---------------- TODOS LOS USUARIOS ----------------
 router.get("/", async (req, res) => {
@@ -264,6 +313,41 @@ router.get("/:userId/carrito", async (req, res) => {
     }
 });
 
+// Validar stock del carrito antes de continuar compra
+router.get("/:userId/carrito/validar-stock", async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const carrito = await Carrito.findAll({
+            where: { usuario_id: userId },
+            include: [{ model: Producto, as: 'producto' }]
+        });
+        const errores = [];
+        for (const item of carrito) {
+            const stockDisponible = await getStockDisponible(item.producto_id);
+            if (item.cantidad > stockDisponible) {
+                const nombre = item.producto?.nombre || 'Producto';
+                errores.push({
+                    producto_id: item.producto_id,
+                    nombre,
+                    stockDisponible,
+                    cantidadSolicitada: item.cantidad
+                });
+            }
+        }
+        res.json({
+            success: true,
+            valido: errores.length === 0,
+            errores
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al validar stock",
+            error: error.message
+        });
+    }
+});
+
 // Ver si un producto está en el carrito
 router.get("/:userId/carrito/:productoId", async (req, res) => {
     try {
@@ -306,8 +390,21 @@ router.post("/:userId/carrito", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const { producto_id, cantidad } = req.body;
+        const cant = Math.max(1, parseInt(cantidad) || 1);
 
-        // Verificar si el producto ya está en el carrito
+        // Verificar que el producto existe
+        const producto = await Producto.findByPk(producto_id);
+        if (!producto) {
+            return res.status(404).json({
+                success: false,
+                error: "Producto no encontrado"
+            });
+        }
+
+        // Verificar stock disponible
+        const stockDisponible = await getStockDisponible(producto_id);
+        let cantidadTotal = cant;
+
         const itemExistente = await Carrito.findOne({
             where: {
                 usuario_id: userId,
@@ -316,8 +413,20 @@ router.post("/:userId/carrito", async (req, res) => {
         });
 
         if (itemExistente) {
-            // Actualizar cantidad
-            itemExistente.cantidad += cantidad || 1;
+            cantidadTotal = itemExistente.cantidad + cant;
+        }
+
+        if (cantidadTotal > stockDisponible) {
+            return res.status(400).json({
+                success: false,
+                error: "Stock insuficiente",
+                stockDisponible,
+                cantidadSolicitada: cantidadTotal
+            });
+        }
+
+        if (itemExistente) {
+            itemExistente.cantidad += cant;
             await itemExistente.save();
 
             return res.json({
@@ -327,11 +436,10 @@ router.post("/:userId/carrito", async (req, res) => {
             });
         }
 
-        // Crear nuevo item en carrito
         const nuevoItem = await Carrito.create({
             usuario_id: userId,
             producto_id,
-            cantidad: cantidad || 1
+            cantidad: cant
         });
 
         res.status(201).json({
@@ -351,8 +459,16 @@ router.post("/:userId/carrito", async (req, res) => {
 // Actualizar cantidad en carrito
 router.put("/:userId/carrito/:productoId", async (req, res) => {
     try {
-        const { userId, productoId } = req.params;
-        const { cantidad } = req.body;
+        const userId = parseInt(req.params.userId);
+        const productoId = parseInt(req.params.productoId);
+        const cantidad = parseInt(req.body.cantidad);
+
+        if (!cantidad || cantidad < 1) {
+            return res.status(400).json({
+                success: false,
+                error: "La cantidad debe ser al menos 1"
+            });
+        }
 
         const item = await Carrito.findOne({
             where: {
@@ -365,6 +481,16 @@ router.put("/:userId/carrito/:productoId", async (req, res) => {
             return res.status(404).json({
                 success: false,
                 error: "Producto no encontrado en el carrito"
+            });
+        }
+
+        const stockDisponible = await getStockDisponible(productoId);
+        if (cantidad > stockDisponible) {
+            return res.status(400).json({
+                success: false,
+                error: "Stock insuficiente",
+                stockDisponible,
+                cantidadSolicitada: cantidad
             });
         }
 
@@ -417,13 +543,12 @@ router.delete("/:userId/carrito/:productoId", async (req, res) => {
     }
 });
 
-// Completar compra (crear pedido)
+// Completar compra (crear pedido desde carrito)
 router.post("/:userId/carrito/comprar", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
-        const { metodo_pago_id, direccion_envio, telefono_contacto, notas } = req.body;
+        const { metodo_pago_id, direccion_id, telefono_contacto, notas } = req.body;
 
-        // Obtener items del carrito
         const itemsCarrito = await Carrito.findAll({
             where: { usuario_id: userId },
             include: [{
@@ -439,41 +564,68 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
             });
         }
 
-        // Calcular total
+        // Verificar stock de todos los items antes de crear el pedido
+        for (const item of itemsCarrito) {
+            const stockDisponible = await getStockDisponible(item.producto_id);
+            if (stockDisponible < item.cantidad) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Stock insuficiente para ${item.producto?.nombre || 'producto'}. Disponible: ${stockDisponible}, solicitado: ${item.cantidad}`
+                });
+            }
+        }
+
+        if (!direccion_id || !telefono_contacto) {
+            return res.status(400).json({
+                success: false,
+                error: "Se requiere direccion_id y telefono_contacto"
+            });
+        }
+
         let total = 0;
         itemsCarrito.forEach(item => {
             total += parseFloat(item.producto.precio) * item.cantidad;
         });
 
-        // Crear pedido
-        const nuevoPedido = await Pedido.create({
-            usuario_id: userId,
-            metodo_pago_id,
-            total,
-            direccion_envio,
-            telefono_contacto,
-            notas,
-            estado: 'pendiente'
-        });
+        const t = await sequelize.transaction();
+        let nuevoPedido;
 
-        // Crear pedido_productos
-        for (const item of itemsCarrito) {
-            const precioUnitario = parseFloat(item.producto.precio);
-            const subtotal = precioUnitario * item.cantidad;
+        try {
+            nuevoPedido = await Pedido.create({
+                usuario_id: userId,
+                metodo_pago_id,
+                total,
+                direccion_id,
+                telefono_contacto: telefono_contacto || '000000000',
+                notas,
+                estado: 'pendiente'
+            }, { transaction: t });
 
-            await PedidoProducto.create({
-                pedido_id: nuevoPedido.id,
-                producto_id: item.producto_id,
-                cantidad: item.cantidad,
-                precio_unitario: precioUnitario,
-                subtotal: subtotal
+            for (const item of itemsCarrito) {
+                const precioUnitario = parseFloat(item.producto.precio);
+                const subtotal = precioUnitario * item.cantidad;
+
+                await PedidoProducto.create({
+                    pedido_id: nuevoPedido.id,
+                    producto_id: item.producto_id,
+                    cantidad: item.cantidad,
+                    precio_unitario: precioUnitario,
+                    subtotal: subtotal
+                }, { transaction: t });
+
+                await reducirStock(item.producto_id, item.cantidad, t);
+            }
+
+            await Carrito.destroy({
+                where: { usuario_id: userId },
+                transaction: t
             });
-        }
 
-        // Vaciar carrito
-        await Carrito.destroy({
-            where: { usuario_id: userId }
-        });
+            await t.commit();
+        } catch (err) {
+            await t.rollback();
+            throw err;
+        }
 
         res.status(201).json({
             success: true,
@@ -613,8 +765,24 @@ router.post("/:userId/pedidos", async (req, res) => {
             });
         }
 
-        // Crear el pedido
-        const nuevoPedido = await Pedido.create({
+        // Verificar stock de todos los productos antes de crear el pedido
+        for (const prod of productos) {
+            const stockDisponible = await getStockDisponible(prod.producto_id);
+            if (stockDisponible < prod.cantidad) {
+                const p = await Producto.findByPk(prod.producto_id);
+                return res.status(400).json({
+                    success: false,
+                    error: `Stock insuficiente para ${p?.nombre || 'producto'}. Disponible: ${stockDisponible}, solicitado: ${prod.cantidad}`
+                });
+            }
+        }
+
+        // Crear el pedido y reducir stock en transacción
+        const t = await sequelize.transaction();
+        let nuevoPedido;
+
+        try {
+            nuevoPedido = await Pedido.create({
             usuario_id: userId,
             total: parseFloat(total),
             direccion_id: direccionId,
@@ -622,23 +790,32 @@ router.post("/:userId/pedidos", async (req, res) => {
             metodo_pago_id,
             estado: estado || 'pendiente',
             fecha_pedido: fecha || new Date()
-        });
+        }, { transaction: t });
 
-        // Crear los detalles del pedido
-        for (const prod of productos) {
-            await PedidoProducto.create({
-                pedido_id: nuevoPedido.id,
-                producto_id: prod.producto_id,
-                cantidad: prod.cantidad,
-                precio_unitario: parseFloat(prod.precio),
-                subtotal: parseFloat(prod.precio) * prod.cantidad
+            // Crear los detalles del pedido y reducir stock
+            for (const prod of productos) {
+                await PedidoProducto.create({
+                    pedido_id: nuevoPedido.id,
+                    producto_id: prod.producto_id,
+                    cantidad: prod.cantidad,
+                    precio_unitario: parseFloat(prod.precio),
+                    subtotal: parseFloat(prod.precio) * prod.cantidad
+                }, { transaction: t });
+
+                await reducirStock(prod.producto_id, prod.cantidad, t);
+            }
+
+            // Vaciar el carrito
+            await Carrito.destroy({
+                where: { usuario_id: userId },
+                transaction: t
             });
-        }
 
-        // Vaciar el carrito
-        await Carrito.destroy({
-            where: { usuario_id: userId }
-        });
+            await t.commit();
+        } catch (err) {
+            await t.rollback();
+            throw err;
+        }
 
         res.status(201).json({
             success: true,

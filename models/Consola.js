@@ -33,6 +33,14 @@ const Consola = sequelize.define('Consola', {
       model: 'plataforma',
       key: 'id'
     }
+  },
+  control_stock: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+    validate: {
+      min: 0
+    }
   }
 }, {
   tableName: 'consolas',
