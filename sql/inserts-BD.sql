@@ -212,19 +212,20 @@ INSERT INTO metodo_pago (tipo, detalles, usuario_id) VALUES
 -- ============================================
 -- INSERTS PARA CARRITO
 -- ============================================
-INSERT INTO carrito (usuario_id, producto_id, cantidad) VALUES
-(1, 1, 1),   -- Juan: Zelda
-(1, 11, 1),  -- Juan: PS5 Standard
-(2, 3, 2),   -- María: 2x FIFA
-(2, 17, 1),  -- María: Camiseta Zelda
-(3, 2, 1),   -- Carlos: Elden Ring
-(3, 19, 2),  -- Carlos: 2x Mando DualSense
-(4, 13, 1),  -- Ana: Switch OLED
-(4, 5, 1),   -- Ana: Mario Odyssey
-(5, 8, 1),   -- Luis: Minecraft
-(5, 23, 1),  -- Luis: Taza Minecraft
-(6, 6, 1),   -- Sara: Cyberpunk
-(6, 25, 1);  -- Sara: Alfombrilla Cyberpunk
+-- plataforma_id: 0 para no-juegos; id de plataforma para juegos
+INSERT INTO carrito (usuario_id, producto_id, plataforma_id, cantidad) VALUES
+(1, 1, 3, 1),   -- Juan: Zelda (Switch)
+(1, 13, 0, 1),  -- Juan: PS5 Standard (consola: plataforma_id=0)
+(2, 3, 1, 2),   -- María: 2x FIFA (PS5)
+(2, 19, 0, 1),  -- María: Camiseta Zelda (merchandising: plataforma_id=0)
+(3, 2, 1, 1),   -- Carlos: Elden Ring (PS5)
+(3, 21, 0, 2),  -- Carlos: 2x Mando DualSense (merchandising)
+(4, 15, 0, 1),  -- Ana: Switch OLED (consola)
+(4, 5, 3, 1),   -- Ana: Mario Odyssey (Switch)
+(5, 8, 1, 1),   -- Luis: Minecraft (PS5)
+(5, 25, 0, 1),  -- Luis: Taza Minecraft (merchandising)
+(6, 6, 1, 1),   -- Sara: Cyberpunk (PS5)
+(6, 27, 0, 1);  -- Sara: Alfombrilla Cyberpunk (merchandising)
 
 -- ============================================
 -- INSERTS PARA WISHLIST

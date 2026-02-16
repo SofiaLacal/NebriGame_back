@@ -124,11 +124,12 @@ CREATE TABLE carrito (
     id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
     producto_id INT NOT NULL,
+    plataforma_id INT NOT NULL DEFAULT 0,
     cantidad INT NOT NULL DEFAULT 1,
     fecha_agregado TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_carrito_usuario_producto (usuario_id, producto_id),
+    UNIQUE KEY unique_carrito_usuario_producto_plataforma (usuario_id, producto_id, plataforma_id),
     CONSTRAINT chk_carrito_cantidad CHECK (cantidad > 0),
     INDEX idx_carrito_usuario (usuario_id),
     INDEX idx_carrito_producto (producto_id)
@@ -289,7 +290,7 @@ BEGIN
 END$$
 
 -- Trigger para validar stock antes de agregar/actualizar en carrito
--- Stock: merchandising y consolas en su tabla; juegos en juegos_plataformas (suma por plataforma)
+-- Stock: merchandising y consolas en su tabla; juegos en juegos_plataformas por plataforma_id
 CREATE TRIGGER trg_validar_stock_carrito_insert
 BEFORE INSERT ON carrito
 FOR EACH ROW
@@ -304,8 +305,13 @@ BEGIN
     ELSEIF producto_tipo = 'consola' THEN
         SELECT control_stock INTO stock_disponible FROM consolas WHERE producto_id = NEW.producto_id;
     ELSEIF producto_tipo = 'juego' THEN
-        SELECT COALESCE(SUM(control_stock), 0) INTO stock_disponible 
-        FROM juegos_plataformas WHERE juego_id = NEW.producto_id;
+        IF NEW.plataforma_id > 0 THEN
+            SELECT COALESCE(control_stock, 0) INTO stock_disponible
+            FROM juegos_plataformas WHERE juego_id = NEW.producto_id AND plataforma_id = NEW.plataforma_id;
+        ELSE
+            SELECT COALESCE(SUM(control_stock), 0) INTO stock_disponible
+            FROM juegos_plataformas WHERE juego_id = NEW.producto_id;
+        END IF;
     END IF;
     
     IF stock_disponible < NEW.cantidad THEN
@@ -328,8 +334,13 @@ BEGIN
     ELSEIF producto_tipo = 'consola' THEN
         SELECT control_stock INTO stock_disponible FROM consolas WHERE producto_id = NEW.producto_id;
     ELSEIF producto_tipo = 'juego' THEN
-        SELECT COALESCE(SUM(control_stock), 0) INTO stock_disponible 
-        FROM juegos_plataformas WHERE juego_id = NEW.producto_id;
+        IF NEW.plataforma_id > 0 THEN
+            SELECT COALESCE(control_stock, 0) INTO stock_disponible
+            FROM juegos_plataformas WHERE juego_id = NEW.producto_id AND plataforma_id = NEW.plataforma_id;
+        ELSE
+            SELECT COALESCE(SUM(control_stock), 0) INTO stock_disponible
+            FROM juegos_plataformas WHERE juego_id = NEW.producto_id;
+        END IF;
     END IF;
     
     IF stock_disponible < NEW.cantidad THEN

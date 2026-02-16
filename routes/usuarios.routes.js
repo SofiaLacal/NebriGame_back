@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
-const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma } = require("../models");
+const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma, Plataforma } = require("../models");
 
 // Helpers para control de stock
-async function getStockDisponible(productoId) {
+// plataformaId: opcional; para juegos, si existe, devuelve stock de esa plataforma; si no, suma total
+async function getStockDisponible(productoId, plataformaId = null) {
     const producto = await Producto.findByPk(productoId);
     if (!producto) return 0;
     switch (producto.tipo) {
@@ -15,14 +16,20 @@ async function getStockDisponible(productoId) {
             const c = await Consola.findOne({ where: { producto_id: productoId } });
             return c ? c.control_stock : 0;
         case 'juego':
-            const jp = await JuegoPlataforma.findAll({ where: { juego_id: productoId } });
-            return jp.reduce((sum, row) => sum + (row.control_stock || 0), 0);
+            if (plataformaId != null && plataformaId !== 0) {
+                const jp = await JuegoPlataforma.findOne({
+                    where: { juego_id: productoId, plataforma_id: plataformaId }
+                });
+                return jp ? (jp.control_stock || 0) : 0;
+            }
+            const jpAll = await JuegoPlataforma.findAll({ where: { juego_id: productoId } });
+            return jpAll.reduce((sum, row) => sum + (row.control_stock || 0), 0);
         default:
             return 0;
     }
 }
 
-async function reducirStock(productoId, cantidad, transaction = null) {
+async function reducirStock(productoId, cantidad, transaction = null, plataformaId = null) {
     const opts = transaction ? { transaction } : {};
     const producto = await Producto.findByPk(productoId);
     if (!producto || cantidad <= 0) return;
@@ -34,18 +41,26 @@ async function reducirStock(productoId, cantidad, transaction = null) {
             await Consola.decrement('control_stock', { by: cantidad, where: { producto_id: productoId }, ...opts });
             break;
         case 'juego':
-            let restante = cantidad;
-            const plataformas = await JuegoPlataforma.findAll({ where: { juego_id: productoId }, order: [['plataforma_id']], ...opts });
-            for (const jp of plataformas) {
-                if (restante <= 0) break;
-                const reducir = Math.min(jp.control_stock, restante);
-                if (reducir > 0) {
-                    await JuegoPlataforma.decrement('control_stock', {
-                        by: reducir,
-                        where: { juego_id: productoId, plataforma_id: jp.plataforma_id },
-                        ...opts
-                    });
-                    restante -= reducir;
+            if (plataformaId != null && plataformaId !== 0) {
+                await JuegoPlataforma.decrement('control_stock', {
+                    by: cantidad,
+                    where: { juego_id: productoId, plataforma_id: plataformaId },
+                    ...opts
+                });
+            } else {
+                let restante = cantidad;
+                const plataformas = await JuegoPlataforma.findAll({ where: { juego_id: productoId }, order: [['plataforma_id']], ...opts });
+                for (const jp of plataformas) {
+                    if (restante <= 0) break;
+                    const reducir = Math.min(jp.control_stock, restante);
+                    if (reducir > 0) {
+                        await JuegoPlataforma.decrement('control_stock', {
+                            by: reducir,
+                            where: { juego_id: productoId, plataforma_id: jp.plataforma_id },
+                            ...opts
+                        });
+                        restante -= reducir;
+                    }
                 }
             }
             break;
@@ -293,10 +308,10 @@ router.get("/:userId/carrito", async (req, res) => {
         
         const carrito = await Carrito.findAll({
             where: { usuario_id: userId },
-            include: [{
-                model: Producto,
-                as: 'producto'
-            }]
+            include: [
+                { model: Producto, as: 'producto' },
+                { model: Plataforma, as: 'plataforma', required: false }
+            ]
         });
 
         res.json({
@@ -323,7 +338,9 @@ router.get("/:userId/carrito/validar-stock", async (req, res) => {
         });
         const errores = [];
         for (const item of carrito) {
-            const stockDisponible = await getStockDisponible(item.producto_id);
+            const producto = await Producto.findByPk(item.producto_id);
+            const platId = producto?.tipo === 'juego' && item.plataforma_id ? item.plataforma_id : null;
+            const stockDisponible = await getStockDisponible(item.producto_id, platId);
             if (item.cantidad > stockDisponible) {
                 const nombre = item.producto?.nombre || 'Producto';
                 errores.push({
@@ -389,8 +406,9 @@ router.get("/:userId/carrito/:productoId", async (req, res) => {
 router.post("/:userId/carrito", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
-        const { producto_id, cantidad } = req.body;
+        const { producto_id, cantidad, plataforma_id } = req.body;
         const cant = Math.max(1, parseInt(cantidad) || 1);
+        const plataformaId = producto_id && plataforma_id != null ? parseInt(plataforma_id) || 0 : 0;
 
         // Verificar que el producto existe
         const producto = await Producto.findByPk(producto_id);
@@ -401,14 +419,23 @@ router.post("/:userId/carrito", async (req, res) => {
             });
         }
 
-        // Verificar stock disponible
-        const stockDisponible = await getStockDisponible(producto_id);
+        // Para juegos, plataforma_id es obligatorio (distinto de 0)
+        if (producto.tipo === 'juego' && (!plataformaId || plataformaId === 0)) {
+            return res.status(400).json({
+                success: false,
+                error: "Para videojuegos se debe indicar la plataforma"
+            });
+        }
+
+        const platIdForStock = producto.tipo === 'juego' ? plataformaId : null;
+        const stockDisponible = await getStockDisponible(producto_id, platIdForStock);
         let cantidadTotal = cant;
 
         const itemExistente = await Carrito.findOne({
             where: {
                 usuario_id: userId,
-                producto_id: producto_id
+                producto_id: producto_id,
+                plataforma_id: plataformaId
             }
         });
 
@@ -439,6 +466,7 @@ router.post("/:userId/carrito", async (req, res) => {
         const nuevoItem = await Carrito.create({
             usuario_id: userId,
             producto_id,
+            plataforma_id: plataformaId,
             cantidad: cant
         });
 
@@ -462,6 +490,7 @@ router.put("/:userId/carrito/:productoId", async (req, res) => {
         const userId = parseInt(req.params.userId);
         const productoId = parseInt(req.params.productoId);
         const cantidad = parseInt(req.body.cantidad);
+        const plataformaId = req.body.plataforma_id != null ? parseInt(req.body.plataforma_id) || 0 : 0;
 
         if (!cantidad || cantidad < 1) {
             return res.status(400).json({
@@ -473,7 +502,8 @@ router.put("/:userId/carrito/:productoId", async (req, res) => {
         const item = await Carrito.findOne({
             where: {
                 usuario_id: userId,
-                producto_id: productoId
+                producto_id: productoId,
+                plataforma_id: plataformaId
             }
         });
 
@@ -484,7 +514,9 @@ router.put("/:userId/carrito/:productoId", async (req, res) => {
             });
         }
 
-        const stockDisponible = await getStockDisponible(productoId);
+        const producto = await Producto.findByPk(productoId);
+        const platIdForStock = producto?.tipo === 'juego' ? plataformaId : null;
+        const stockDisponible = await getStockDisponible(productoId, platIdForStock);
         if (cantidad > stockDisponible) {
             return res.status(400).json({
                 success: false,
@@ -514,12 +546,18 @@ router.put("/:userId/carrito/:productoId", async (req, res) => {
 // Eliminar del carrito
 router.delete("/:userId/carrito/:productoId", async (req, res) => {
     try {
-        const { userId, productoId } = req.params;
+        const userId = parseInt(req.params.userId);
+        const productoId = parseInt(req.params.productoId);
+        const platFromBody = req.body?.plataforma_id;
+        const platFromQuery = req.query.plataforma_id;
+        const plataformaId = (platFromBody != null ? platFromBody : platFromQuery) != null
+            ? parseInt(platFromBody ?? platFromQuery) || 0 : 0;
 
         const resultado = await Carrito.destroy({
             where: {
                 usuario_id: userId,
-                producto_id: productoId
+                producto_id: productoId,
+                plataforma_id: plataformaId
             }
         });
 
@@ -566,7 +604,8 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
 
         // Verificar stock de todos los items antes de crear el pedido
         for (const item of itemsCarrito) {
-            const stockDisponible = await getStockDisponible(item.producto_id);
+            const platId = item.producto?.tipo === 'juego' && item.plataforma_id ? item.plataforma_id : null;
+            const stockDisponible = await getStockDisponible(item.producto_id, platId);
             if (stockDisponible < item.cantidad) {
                 return res.status(400).json({
                     success: false,
@@ -613,7 +652,8 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
                     subtotal: subtotal
                 }, { transaction: t });
 
-                await reducirStock(item.producto_id, item.cantidad, t);
+                const platId = item.producto?.tipo === 'juego' && item.plataforma_id ? item.plataforma_id : null;
+                await reducirStock(item.producto_id, item.cantidad, t, platId);
             }
 
             await Carrito.destroy({
@@ -767,9 +807,10 @@ router.post("/:userId/pedidos", async (req, res) => {
 
         // Verificar stock de todos los productos antes de crear el pedido
         for (const prod of productos) {
-            const stockDisponible = await getStockDisponible(prod.producto_id);
+            const p = await Producto.findByPk(prod.producto_id);
+            const platId = p?.tipo === 'juego' && prod.plataforma_id ? prod.plataforma_id : null;
+            const stockDisponible = await getStockDisponible(prod.producto_id, platId);
             if (stockDisponible < prod.cantidad) {
-                const p = await Producto.findByPk(prod.producto_id);
                 return res.status(400).json({
                     success: false,
                     error: `Stock insuficiente para ${p?.nombre || 'producto'}. Disponible: ${stockDisponible}, solicitado: ${prod.cantidad}`
@@ -802,7 +843,9 @@ router.post("/:userId/pedidos", async (req, res) => {
                     subtotal: parseFloat(prod.precio) * prod.cantidad
                 }, { transaction: t });
 
-                await reducirStock(prod.producto_id, prod.cantidad, t);
+                const p = await Producto.findByPk(prod.producto_id);
+                const platId = p?.tipo === 'juego' && prod.plataforma_id ? prod.plataforma_id : null;
+                await reducirStock(prod.producto_id, prod.cantidad, t, platId);
             }
 
             // Vaciar el carrito

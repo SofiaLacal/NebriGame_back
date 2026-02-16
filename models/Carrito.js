@@ -27,6 +27,11 @@ const Carrito = sequelize.define('Carrito', {
       key: 'id'
     }
   },
+  plataforma_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  },
   cantidad: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -43,7 +48,7 @@ const Carrito = sequelize.define('Carrito', {
   tableName: 'carrito',
   timestamps: false,
   indexes: [
-    { unique: true, fields: ['usuario_id', 'producto_id'] },
+    { unique: true, fields: ['usuario_id', 'producto_id', 'plataforma_id'] },
     { fields: ['usuario_id'] },
     { fields: ['producto_id'] }
   ]

@@ -172,9 +172,9 @@ router.get("/producto/:id/stock", async (req, res) => {
                     });
                     const nombreById = Object.fromEntries(plataformasList.map(p => [p.id, p.nombre]));
                     plataformas = jp.map(row => ({
-                        id: row.plataforma_id,
+                        id: Number(row.plataforma_id),
                         nombre: nombreById[row.plataforma_id] || "",
-                        control_stock: row.control_stock || 0
+                        control_stock: Number(row.control_stock) || 0
                     }));
                 }
                 stock = jp.reduce((sum, row) => sum + (row.control_stock || 0), 0);

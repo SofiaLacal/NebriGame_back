@@ -102,6 +102,15 @@ Carrito.belongsTo(Producto, {
   as: 'producto'
 });
 
+Carrito.belongsTo(Plataforma, {
+  foreignKey: 'plataforma_id',
+  as: 'plataforma'
+});
+Plataforma.hasMany(Carrito, {
+  foreignKey: 'plataforma_id',
+  as: 'carritos'
+});
+
 // Producto - Wishlist (1:N)
 Producto.hasMany(Wishlist, {
   foreignKey: 'producto_id',
