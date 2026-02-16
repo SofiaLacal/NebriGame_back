@@ -264,36 +264,37 @@ INSERT INTO pedidos (usuario_id, metodo_pago_id, total, estado, direccion_id, te
 -- ============================================
 -- INSERTS PARA PEDIDOS_PRODUCTOS
 -- ============================================
+-- plataforma_id: NULL para consolas/merchandising; id de plataforma para juegos
 -- Pedido 1: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES
-(1, 11, 1, 549.99, 549.99),  -- PS5 Standard
-(1, 1, 1, 59.99, 59.99);     -- Zelda
+INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
+(1, 13, NULL, 1, 549.99, 549.99),  -- PS5 Standard (consola)
+(1, 1, 3, 1, 59.99, 59.99);       -- Zelda (Switch)
 
 -- Pedido 2: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES
-(2, 3, 2, 49.99, 99.98);     -- 2x FIFA
+INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
+(2, 3, 1, 2, 49.99, 99.98);       -- 2x FIFA (PS5)
 
 -- Pedido 3: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES
-(3, 2, 1, 69.99, 69.99),     -- Elden Ring
-(3, 19, 2, 19.99, 39.98);    -- 2x Mando DualSense (precio oferta)
+INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
+(3, 2, 1, 1, 69.99, 69.99),       -- Elden Ring (PS5)
+(3, 21, NULL, 2, 19.99, 39.98);   -- 2x Mando DualSense (merchandising)
 
 -- Pedido 4: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES
-(4, 13, 1, 349.99, 349.99),  -- Switch OLED
-(4, 5, 1, 59.99, 59.99);     -- Mario Odyssey
+INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
+(4, 15, NULL, 1, 349.99, 349.99), -- Switch OLED (consola)
+(4, 5, 3, 1, 59.99, 59.99);       -- Mario Odyssey (Switch)
 
 -- Pedido 5: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES
-(5, 17, 1, 24.99, 24.99);    -- Camiseta Zelda
+INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
+(5, 19, NULL, 1, 24.99, 24.99);   -- Camiseta Zelda (merchandising)
 
 -- Pedido 6: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES
-(6, 8, 1, 29.99, 29.99),     -- Minecraft
-(6, 23, 1, 12.99, 12.99),    -- Taza Minecraft
-(6, 20, 1, 9.99, 9.99);      -- Poster Elden Ring
+INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
+(6, 8, 1, 1, 29.99, 29.99),       -- Minecraft (PS5)
+(6, 25, NULL, 1, 12.99, 12.99),   -- Taza Minecraft (merchandising)
+(6, 22, NULL, 1, 9.99, 9.99);     -- Poster Elden Ring (merchandising)
 
 -- Pedido 7: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES
-(7, 14, 1, 449.99, 449.99),  -- PS5 Digital
-(7, 6, 1, 39.99, 39.99);     -- Cyberpunk 2077
+INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
+(7, 16, NULL, 1, 449.99, 449.99), -- PS5 Digital (consola)
+(7, 6, 1, 1, 39.99, 39.99);       -- Cyberpunk 2077 (PS5)

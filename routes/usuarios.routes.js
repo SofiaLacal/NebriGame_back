@@ -643,16 +643,17 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
             for (const item of itemsCarrito) {
                 const precioUnitario = parseFloat(item.producto.precio);
                 const subtotal = precioUnitario * item.cantidad;
+                const platId = item.producto?.tipo === 'juego' && item.plataforma_id ? item.plataforma_id : null;
 
                 await PedidoProducto.create({
                     pedido_id: nuevoPedido.id,
                     producto_id: item.producto_id,
+                    plataforma_id: platId,
                     cantidad: item.cantidad,
                     precio_unitario: precioUnitario,
                     subtotal: subtotal
                 }, { transaction: t });
 
-                const platId = item.producto?.tipo === 'juego' && item.plataforma_id ? item.plataforma_id : null;
                 await reducirStock(item.producto_id, item.cantidad, t, platId);
             }
 
@@ -694,10 +695,10 @@ router.get("/:userId/historial-compras", async (req, res) => {
                 {
                     model: PedidoProducto,
                     as: 'detalles',
-                    include: [{
-                        model: Producto,
-                        as: 'producto'
-                    }]
+                    include: [
+                        { model: Producto, as: 'producto' },
+                        { model: Plataforma, as: 'plataforma', required: false }
+                    ]
                 },
                 {
                     model: Direccion,
@@ -716,6 +717,7 @@ router.get("/:userId/historial-compras", async (req, res) => {
             telefono_contacto: pedido.telefono_contacto,
             productos: pedido.detalles.map(detalle => ({
                 nombre: detalle.producto.nombre,
+                plataforma: detalle.plataforma?.nombre || null,
                 cantidad: detalle.cantidad,
                 precio: parseFloat(detalle.precio_unitario).toFixed(2)
             })),
@@ -835,16 +837,16 @@ router.post("/:userId/pedidos", async (req, res) => {
 
             // Crear los detalles del pedido y reducir stock
             for (const prod of productos) {
+                const platId = prod.plataforma_id && prod.plataforma_id > 0 ? prod.plataforma_id : null;
                 await PedidoProducto.create({
                     pedido_id: nuevoPedido.id,
                     producto_id: prod.producto_id,
+                    plataforma_id: platId,
                     cantidad: prod.cantidad,
                     precio_unitario: parseFloat(prod.precio),
                     subtotal: parseFloat(prod.precio) * prod.cantidad
                 }, { transaction: t });
 
-                const p = await Producto.findByPk(prod.producto_id);
-                const platId = p?.tipo === 'juego' && prod.plataforma_id ? prod.plataforma_id : null;
                 await reducirStock(prod.producto_id, prod.cantidad, t, platId);
             }
 

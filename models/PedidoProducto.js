@@ -27,6 +27,14 @@ const PedidoProducto = sequelize.define('PedidoProducto', {
       key: 'id'
     }
   },
+  plataforma_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'plataforma',
+      key: 'id'
+    }
+  },
   cantidad: {
     type: DataTypes.INTEGER,
     allowNull: false,

@@ -202,6 +202,11 @@ PedidoProducto.belongsTo(Producto, {
   as: 'producto'
 });
 
+PedidoProducto.belongsTo(Plataforma, {
+  foreignKey: 'plataforma_id',
+  as: 'plataforma'
+});
+
 // ============================================
 // EXPORTAR TODO
 // ============================================
