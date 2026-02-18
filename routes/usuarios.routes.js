@@ -140,7 +140,17 @@ router.post("/registro", async (req, res) => {
         const datosUsuario = { nombre, apellido1, apellido2, email, contrasenna: hashedPassword };
         const nuevoUsuario = await Usuario.create(datosUsuario);
         console.log(datosUsuario);
-
+        const usuario = await Usuario.findOne({
+            where: {
+                email: email
+            }
+        });
+        if (usuario) {
+            return res.status(400).json({
+                success: false,
+                error: "Usuario ya existe"
+            });
+        }
         const usuarioData = {
             id: nuevoUsuario.id,
             nombre: nuevoUsuario.nombre,
