@@ -136,10 +136,6 @@ router.post("/login", async (req, res) => {
 router.post("/registro", async (req, res) => {
     try {
         const { nombre, apellido1, apellido2, email, contrasenna } = req.body;
-        const hashedPassword = await bcrypt.hash(contrasenna, 10);
-        const datosUsuario = { nombre, apellido1, apellido2, email, contrasenna: hashedPassword };
-        const nuevoUsuario = await Usuario.create(datosUsuario);
-        console.log(datosUsuario);
         const usuario = await Usuario.findOne({
             where: {
                 email: email
@@ -148,9 +144,17 @@ router.post("/registro", async (req, res) => {
         if (usuario) {
             return res.status(400).json({
                 success: false,
+                message: "Usuario ya existe",
                 error: "Usuario ya existe"
             });
+            
         }
+        const hashedPassword = await bcrypt.hash(contrasenna, 10);
+        const datosUsuario = { nombre, apellido1, apellido2, email, contrasenna: hashedPassword };
+        const nuevoUsuario = await Usuario.create(datosUsuario);
+        console.log(datosUsuario);
+
+
         const usuarioData = {
             id: nuevoUsuario.id,
             nombre: nuevoUsuario.nombre,
@@ -167,7 +171,7 @@ router.post("/registro", async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Error en registro",
+            message: "error al registrar usuario",
             error: error.message
         });
     }
