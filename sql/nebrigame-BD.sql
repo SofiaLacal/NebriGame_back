@@ -90,7 +90,6 @@ CREATE TABLE juegos (
 CREATE TABLE juegos_plataformas (
     juego_id INT NOT NULL,
     plataforma_id INT NOT NULL,
-    fecha_lanzamiento DATE,
     control_stock INT NOT NULL DEFAULT 0,
     PRIMARY KEY (juego_id, plataforma_id),
     CONSTRAINT chk_jp_stock CHECK (control_stock >= 0),

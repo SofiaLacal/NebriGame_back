@@ -97,10 +97,10 @@ INSERT INTO productos (nombre, precio, descripcion, tipo, imagen_url) VALUES
 ('Set de Pins Coleccionables Retro Gaming', 16.99, 'Colección de 6 pins esmaltados de metal con personajes y símbolos icónicos de videojuegos clásicos: Mario, Sonic, Pac-Man, Space Invaders, Tetris y la Triforce de Zelda. Cada pin mide aproximadamente 2.5cm y está fabricado en aleación de zinc con esmalte de colores vibrantes y acabado brillante. Incluye cierre de mariposa doble para máxima seguridad. Vienen presentados en tarjeta coleccionable con ilustraciones retro y código QR de autenticidad. Perfectos para personalizar mochilas, chaquetas, gorras o para coleccionar. Edición limitada con numeración individual. Licencias oficiales de Nintendo, SEGA y Atari. Ideal para nostalgia gamer y regalo para coleccionistas.', 'merchandising', '/assets/imagenes/merchandising/pins.jpg'),
 ('Tarjeta Regalo PlayStation Network 50€', 50.00, 'Tarjeta regalo digital de PlayStation Network con saldo de 50€ para gastar en PlayStation Store. Válida para comprar juegos digitales, DLC, expansiones, suscripciones PS Plus y contenido multimedia en PS5 y PS4. Código de canje que se activa instantáneamente en tu cuenta PSN. No caduca y el saldo se añade directamente a tu monedero de PlayStation. Perfecta como regalo para cualquier jugador de PlayStation. Instrucciones de canje incluidas. Compatible con todas las cuentas de la región europea. No requiere tarjeta de crédito para usar el saldo.', 'merchandising', '/assets/imagenes/merchandising/psn50.jpg'),
 ('Tarjeta Regalo Xbox Live 25€', 25.00, 'Tarjeta regalo de Xbox con 25€ de saldo para Microsoft Store. Úsala para comprar juegos digitales de Xbox Series X|S, Xbox One, contenido descargable, suscripciones a Xbox Game Pass Ultimate y aplicaciones. Código digital de activación inmediata que se añade a tu cuenta Microsoft. Compatible con Xbox Series X|S, Xbox One y PC con Windows. El saldo no caduca. Ideal como regalo para jugadores de Xbox. Incluye instrucciones de canje. Región europea. Perfecta para aprovechar ofertas y rebajas de la tienda digital.', 'merchandising', '/assets/imagenes/merchandising/xbox25.jpg'),
-('Tarjeta Nintendo eShop 35€', 35.00, 'Tarjeta prepago de Nintendo eShop con 35€ de crédito para comprar juegos digitales, DLC y suscripciones a Nintendo Switch Online. Código de descarga digital que se activa instantáneamente. Válida para Nintendo Switch y familia de consolas 3DS. El saldo se añade a tu cuenta Nintendo y no caduca. Accede a miles de juegos indie, títulos AAA y exclusivos de Nintendo. Perfecta como regalo para fans de Nintendo. Compatible con cuentas europeas. Incluye instrucciones de canje en español. Sin necesidad de tarjeta de crédito para usar el crédito.', 'merchandising', '/assets/imagenes/merchandising/eshop35.jpg'),
+('Tarjeta Nintendo eShop 25€', 25.00, 'Tarjeta prepago de Nintendo eShop con 25€ de crédito para comprar juegos digitales, DLC y suscripciones a Nintendo Switch Online. Código de descarga digital que se activa instantáneamente. Válida para Nintendo Switch y familia de consolas 3DS. El saldo se añade a tu cuenta Nintendo y no caduca. Accede a miles de juegos indie, títulos AAA y exclusivos de Nintendo. Perfecta como regalo para fans de Nintendo. Compatible con cuentas europeas. Incluye instrucciones de canje en español. Sin necesidad de tarjeta de crédito para usar el crédito.', 'merchandising', '/assets/imagenes/merchandising/eshop25.jpg'),
 ('Tarjeta Steam 20€', 20.00, 'Tarjeta regalo de Steam Wallet con 20€ para comprar juegos, DLC, software y contenido en la plataforma Steam. Código digital de activación inmediata que se añade a tu monedero de Steam. Compatible con PC, Mac y Steam Deck. Accede a la biblioteca más grande de juegos de PC con miles de títulos disponibles. El saldo no caduca y se puede usar en rebajas y ofertas especiales. Perfecta para regalar a gamers de PC. Incluye instrucciones de canje. Región europea. También válida para comprar contenido del mercado comunitario de Steam.', 'merchandising', '/assets/imagenes/merchandising/steam20.jpg'),
 ('Cable HDMI 2.1 Premium 2 metros', 12.99, 'Cable HDMI de alta velocidad certificado HDMI 2.1 con soporte para resolución 8K@60Hz y 4K@120Hz. Perfecto para conectar PlayStation 5, Xbox Series X, PC gaming y dispositivos multimedia a TV o monitor. Soporte completo para tecnologías HDR10+, Dolby Vision, eARC para audio sin pérdida y VRR (Variable Refresh Rate). Construcción premium con conectores chapados en oro 24K resistentes a la corrosión. Cable trenzado de nylon duradero con protección EMI/RFI. Longitud de 2 metros ideal para sala de estar o gaming. Compatible con todas las versiones anteriores de HDMI. Garantía de 3 años.', 'merchandising', '/assets/imagenes/merchandising/hdmi21.jpg'),
-('Soporte Vertical para Consolas', 16.99, 'Soporte vertical universal con ventilación activa para consolas PlayStation 5, Xbox Series X/S. Diseño de torre que ahorra espacio con base antideslizante estable. Sistema de ventilación con 2 ventiladores silenciosos que mejoran el flujo de aire y mantienen la consola refrigerada durante sesiones largas. Incluye 2 puertos de carga USB adicionales para mandos. Compartimentos para almacenar hasta 12 juegos físicos. LED indicador de encendido. Construcción en ABS de alta calidad. Alimentación por USB con cable incluido. Fácil instalación sin herramientas. Protege tu consola del polvo y sobrecalentamiento.', 'merchandising', '/assets/imagenes/merchandising/soporteConsola.jpg'),
+('Soporte Vertical para PS5', 16.99, 'Soporte vertical universal con ventilación activa para consolas PlayStation 5. Diseño de torre que ahorra espacio con base antideslizante estable. Sistema de ventilación con 2 ventiladores silenciosos que mejoran el flujo de aire y mantienen la consola refrigerada durante sesiones largas. Incluye 2 puertos de carga USB adicionales para mandos. Compartimentos para almacenar hasta 12 juegos físicos. LED indicador de encendido. Construcción en ABS de alta calidad. Alimentación por USB con cable incluido. Fácil instalación sin herramientas. Protege tu consola del polvo y sobrecalentamiento.', 'merchandising', '/assets/imagenes/merchandising/soporteConsola.jpg'),
 ('Base de Carga Dual para Mandos PS5', 24.99, 'Estación de carga oficial para dos mandos DualSense de PlayStation 5. Diseño elegante que combina con la estética de PS5. Carga rápida simultánea de 2 mandos en 3 horas. Indicadores LED que muestran el estado de carga (naranja cargando, blanco completado). Protección contra sobrecarga y cortocircuito. Conexión mediante puerto USB-C con cable de alimentación incluido. Los mandos se acoplan magnéticamente con click satisfactorio. Base antideslizante con peso balanceado. Acabado en blanco mate a juego con la consola. Compatible con todos los colores de DualSense. Mantén tus mandos siempre listos para jugar.', 'merchandising', '/assets/imagenes/merchandising/cargadorDual.jpg'),
 ('Pegatinas Gamer Pack 50 unidades', 8.99, 'Pack de 50 pegatinas adhesivas de vinilo resistente con diseños de videojuegos populares: logos de consolas, personajes icónicos, memes gaming y símbolos retro. Incluye stickers de PlayStation, Xbox, Nintendo, Steam, Minecraft, Among Us, Fortnite y más. Pegatinas impermeables y resistentes a rayones, perfectas para personalizar laptops, consolas, mandos, botellas de agua y mochilas. Tamaños variados entre 5-10cm. Fáciles de pegar y remover sin dejar residuos. Colores vibrantes con acabado brillante. Impresas con tintas de alta calidad resistentes a la decoloración. Perfectas para gamers que quieren personalizar su setup.', 'merchandising', '/assets/imagenes/merchandising/pegatinasGamer.jpg'),
 ('Artbook The Legend of Zelda: Tears of the Kingdom', 39.99, 'Libro de arte oficial de tapa dura con más de 400 páginas de ilustraciones exclusivas de The Legend of Zelda: Tears of the Kingdom. Incluye bocetos conceptuales, diseños de personajes, paisajes de Hyrule, criaturas, armas y mazmorras. Comentarios de los desarrolladores sobre el proceso creativo. Sección de arte final en alta calidad. Encuadernación premium de 24x32cm con sobrecubierta protectora. Papel couché de 170g/m² para reproducción óptima de colores. Texto en español con licencia oficial de Nintendo. Perfecto para coleccionistas y fans de la saga Zelda. Incluye póster desplegable a doble página.', 'merchandising', '/assets/imagenes/merchandising/artbookZelda.jpg'),
@@ -155,153 +155,153 @@ INSERT INTO juegos (producto_id, genero, edad_minima) VALUES
 -- ============================================
 -- INSERTS PARA JUEGOS_PLATAFORMAS (N:N)
 -- ============================================
-INSERT INTO juegos_plataformas (juego_id, plataforma_id, fecha_lanzamiento, control_stock) VALUES
+INSERT INTO juegos_plataformas (juego_id, plataforma_id, control_stock) VALUES
 -- Zelda (solo Switch) - stock 25
-(1, 3, '2017-03-03', 25),
+(1, 3, 25),
 
 -- Elden Ring (multiplataforma) - stock 30 repartido
-(2, 1, '2022-02-25', 8),
-(2, 2, '2022-02-25', 8),
-(2, 4, '2022-02-25', 7),
-(2, 5, '2022-02-25', 7),
+(2, 1, 8),
+(2, 2, 8),
+(2, 4, 7),
+(2, 5, 7),
 
 -- FIFA 24 (multiplataforma) - stock 50 repartido
-(3, 1, '2023-09-29', 13),
-(3, 2, '2023-09-29', 12),
-(3, 3, '2023-09-29', 13),
-(3, 4, '2023-09-29', 12),
+(3, 1, 13),
+(3, 2, 12),
+(3, 3, 13),
+(3, 4, 12),
 
 -- Call of Duty (multiplataforma) - stock 40 repartido
-(4, 1, '2023-11-10', 14),
-(4, 2, '2023-11-10', 13),
-(4, 4, '2023-11-10', 13),
+(4, 1, 14),
+(4, 2, 13),
+(4, 4, 13),
 
 -- Mario (solo Switch) - stock 20
-(5, 3, '2017-10-27', 20),
+(5, 3, 20),
 
 -- Cyberpunk (multiplataforma) - stock 15 repartido
-(6, 1, '2020-12-10', 4),
-(6, 2, '2020-12-10', 4),
-(6, 4, '2020-12-10', 4),
-(6, 5, '2021-09-28', 3),
+(6, 1, 4),
+(6, 2, 4),
+(6, 4, 4),
+(6, 5, 3),
 
 -- Red Dead 2 (multiplataforma) - stock 22 repartido
-(7, 1, '2018-10-26', 8),
-(7, 2, '2018-10-26', 7),
-(7, 4, '2019-11-05', 7),
+(7, 1, 8),
+(7, 2, 7),
+(7, 4, 7),
 
 -- Minecraft (todas las plataformas) - stock 100 repartido
-(8, 1, '2014-09-04', 25),
-(8, 2, '2014-09-05', 25),
-(8, 3, '2017-05-11', 25),
-(8, 4, '2009-05-17', 25),
+(8, 1, 25),
+(8, 2, 25),
+(8, 3, 25),
+(8, 4, 25),
 
 -- GTA V (multiplataforma) - stock 45 repartido
-(9, 1, '2022-03-15', 12),
-(9, 2, '2021-11-11', 11),
-(9, 4, '2015-04-14', 11),
-(9, 5, '2013-09-17', 11),
+(9, 1, 12),
+(9, 2, 11),
+(9, 4, 11),
+(9, 5, 11),
 
 -- The Witcher 3 (multiplataforma) - stock 30 repartido
-(10, 1, '2015-05-19', 8),
-(10, 2, '2015-05-19', 8),
-(10, 3, '2019-10-15', 7),
-(10, 4, '2015-05-19', 7),
+(10, 1, 8),
+(10, 2, 8),
+(10, 3, 7),
+(10, 4, 7),
 
 -- Hogwarts Legacy (multiplataforma) - stock 35 repartido
-(11, 1, '2023-02-10', 7),
-(11, 2, '2023-02-10', 7),
-(11, 3, '2023-11-14', 7),
-(11, 4, '2023-02-10', 7),
-(11, 5, '2023-04-04', 7),
+(11, 1, 7),
+(11, 2, 7),
+(11, 3, 7),
+(11, 4, 7),
+(11, 5, 7),
 
 -- Starfield (Xbox y PC exclusivo) - stock 28 repartido
-(12, 2, '2023-09-06', 14),
-(12, 4, '2023-09-06', 14),
+(12, 2, 14),
+(12, 4, 14),
 
 -- Spider-Man 2 (solo PS5) - stock 20
-(13, 1, '2023-10-20', 20),
+(13, 1, 20),
 
 -- Forza Horizon 5 (Xbox y PC) - stock 35
-(14, 2, '2021-11-09', 18),
-(14, 4, '2021-11-09', 17),
+(14, 2, 18),
+(14, 4, 17),
 
 -- Baldur's Gate 3 (multiplataforma) - stock 30
-(15, 1, '2023-09-06', 10),
-(15, 2, '2023-12-07', 10),
-(15, 4, '2023-08-03', 10),
+(15, 1, 10),
+(15, 2, 10),
+(15, 4, 10),
 
 -- God of War Ragnarök (solo PS5) - stock 18
-(16, 1, '2022-11-09', 18),
+(16, 1, 18),
 
 -- The Last of Us Part II (solo PS) - stock 25
-(17, 1, '2020-06-19', 13),
-(17, 5, '2020-06-19', 12),
+(17, 1, 13),
+(17, 5, 12),
 
 -- RE4 Remake (multiplataforma) - stock 32
-(18, 1, '2023-03-24', 11),
-(18, 2, '2023-03-24', 11),
-(18, 4, '2023-03-24', 10),
+(18, 1, 11),
+(18, 2, 11),
+(18, 4, 10),
 
 -- Hades (multiplataforma) - stock 40
-(19, 1, '2021-08-13', 10),
-(19, 2, '2021-08-13', 10),
-(19, 3, '2020-09-17', 10),
-(19, 4, '2020-09-17', 10),
+(19, 1, 10),
+(19, 2, 10),
+(19, 3, 10),
+(19, 4, 10),
 
 -- Animal Crossing (solo Switch) - stock 30
-(20, 3, '2020-03-20', 30),
+(20, 3, 30),
 
 -- Sekiro (multiplataforma) - stock 28
-(21, 1, '2019-03-22', 9),
-(21, 2, '2019-03-22', 10),
-(21, 4, '2019-03-22', 9),
+(21, 1, 9),
+(21, 2, 10),
+(21, 4, 9),
 
 -- Street Fighter 6 (multiplataforma) - stock 33
-(22, 1, '2023-06-02', 11),
-(22, 2, '2023-06-02', 11),
-(22, 4, '2023-06-02', 11),
+(22, 1, 11),
+(22, 2, 11),
+(22, 4, 11),
 
 -- Splatoon 3 (solo Switch) - stock 22
-(23, 3, '2022-09-09', 22),
+(23, 3, 22),
 
 -- Diablo IV (multiplataforma) - stock 36
-(24, 1, '2023-06-06', 12),
-(24, 2, '2023-06-06', 12),
-(24, 4, '2023-06-06', 12),
+(24, 1, 12),
+(24, 2, 12),
+(24, 4, 12),
 
 -- Horizon Forbidden West (solo PS) - stock 24
-(25, 1, '2022-02-18', 12),
-(25, 5, '2022-02-18', 12),
+(25, 1, 12),
+(25, 5, 12),
 
 -- Metroid Dread (solo Switch) - stock 19
-(26, 3, '2021-10-08', 19),
+(26, 3, 19),
 
 -- AC Valhalla (multiplataforma) - stock 38
-(27, 1, '2020-11-10', 13),
-(27, 2, '2020-11-10', 13),
-(27, 4, '2020-11-10', 12),
+(27, 1, 13),
+(27, 2, 13),
+(27, 4, 12),
 
 -- Hollow Knight (todas las plataformas) - stock 50
-(28, 1, '2018-09-25', 13),
-(28, 2, '2018-09-25', 12),
-(28, 3, '2018-06-12', 13),
-(28, 4, '2017-02-24', 12),
+(28, 1, 13),
+(28, 2, 12),
+(28, 3, 13),
+(28, 4, 12),
 
 -- Pokémon Scarlet (solo Switch) - stock 35
-(29, 3, '2022-11-18', 35),
+(29, 3, 35),
 
 -- Pokémon Violet (solo Switch) - stock 35
-(30, 3, '2022-11-18', 35),
+(30, 3, 35),
 
 -- Pokémon Legends Arceus (solo Switch) - stock 28
-(31, 3, '2022-01-28', 28),
+(31, 3, 28),
 
 -- Pokémon Brilliant Diamond (solo Switch) - stock 24
-(32, 3, '2021-11-19', 24),
+(32, 3, 24),
 
 -- Pokémon Shining Pearl (solo Switch) - stock 24
-(33, 3, '2021-11-19', 24);
+(33, 3, 24);
 
 -- ============================================
 -- INSERTS PARA CONSOLAS (Especialización)
