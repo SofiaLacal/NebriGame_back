@@ -244,7 +244,9 @@ router.patch("/:userId", async (req, res) => {
                     error: "Debes indicar la contraseña actual para cambiarla"
                 });
             }
+            
             const passwordMatch = await bcrypt.compare(contrasennaActual, usuario.contrasenna);
+
             if (!passwordMatch) {
                 return res.status(401).json({
                     success: false,
@@ -263,11 +265,13 @@ router.patch("/:userId", async (req, res) => {
             email: usuarioActualizado.email,
             fecha_registro: usuarioActualizado.fecha_registro
         }
+
         res.json({
             success: true,
             mensaje: "Perfil actualizado",
             usuario: usuarioData
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
