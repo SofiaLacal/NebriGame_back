@@ -11,6 +11,7 @@ INSERT INTO usuarios (nombre, apellido1, apellido2, email, contrasenna) VALUES
 ('Juan', 'Garcia', NULL, 'juangarcia@gmail.com', '$2b$10$7vqbSyxNxXKD./q58z0RZuvDWEKkSrZmWI.5Z2Pboo19ikB1pSi4G'),
 ('Pepito', 'Perez', NULL, 'pepitoperez@gmail.com', '$2b$10$juQg3PVD0aDd0u/NvpA/LO1itY/QADeX7NdHogt84q.7dw0Vy4Hny');
 
+
 -- ============================================
 -- INSERTS PARA PLATAFORMAS
 -- ============================================
@@ -23,6 +24,7 @@ INSERT INTO plataforma (nombre) VALUES
 ('Xbox One'),
 ('Steam Deck'),
 ('Meta Quest');
+
 
 -- ============================================
 -- INSERTS PARA PRODUCTOS BASE - JUEGOS
@@ -62,6 +64,7 @@ INSERT INTO productos (nombre, precio, descripcion, tipo, imagen_url) VALUES
 ('Pokémon Brilliant Diamond', 59.99, 'Remake fiel de Pokémon Diamante con gráficos renovados estilo chibi 3D. Explora la región de Sinnoh capturando más de 490 Pokémon de las primeras cuatro generaciones. Desafía a gimnasios, la Liga Pokémon y completa la Pokédex Nacional. Mejoras de calidad de vida: EXP Share mejorado, TMs reutilizables, acceso al PC portátil. Grand Underground expandido con estatuas coleccionables que aumentan spawns. Compatibilidad con Pokémon HOME. Contest Shows renovados con ritmo musical. Batalla contra entrenadores del Team Galactic liderados por Helio. Captura a Dialga y explora el Mundo Distorsión. Incluye Parque Compi actualizado. Multijugador local y online.', 'juego', '/assets/imagenes/videojuegos/pokemonBrilliantDiamond.jpg'),
 ('Pokémon Shining Pearl', 59.99, 'Remake fiel de Pokémon Perla con gráficos renovados estilo chibi 3D. Explora la región de Sinnoh capturando más de 490 Pokémon de las primeras cuatro generaciones. Desafía a gimnasios, la Liga Pokémon y completa la Pokédex Nacional. Mejoras de calidad de vida: EXP Share mejorado, TMs reutilizables, acceso al PC portátil. Grand Underground expandido con estatuas coleccionables que aumentan spawns. Compatibilidad con Pokémon HOME. Contest Shows renovados con ritmo musical. Batalla contra entrenadores del Team Galactic liderados por Helio. Captura a Palkia y explora el Mundo Distorsión. Incluye Parque Compi actualizado. Multijugador local y online.', 'juego', '/assets/imagenes/videojuegos/pokemonShiningPearl.jpg');
 
+
 -- ============================================
 -- INSERTS PARA PRODUCTOS BASE - CONSOLAS
 -- ============================================
@@ -78,6 +81,7 @@ INSERT INTO productos (nombre, precio, descripcion, tipo, imagen_url) VALUES
 ('Xbox One X', 499.99, 'La consola Xbox más potente de la generación anterior con soporte 4K nativo real. Potencia de procesamiento de 6 teraflops que ejecuta juegos enhanced a resoluciones superiores. Disco duro de 1TB con acceso a toda la biblioteca de Xbox One, 360 y juegos originales compatibles. 4K Blu-ray player integrado para películas en máxima calidad. Retrocompatibilidad mejorada con auto-HDR para juegos antiguos. Xbox Game Pass Ultimate incluye acceso a cientos de juegos por suscripción. Diseño compacto en color negro mate con enfriamiento silencioso avanzado. Ideal para gaming 4K sin saltar a nueva generación.', 'consola', '/assets/imagenes/consolas/xboxOneX.jpg'),
 ('Steam Deck OLED', 549.99, 'Versión mejorada de Steam Deck con pantalla OLED HDR de 7.4 pulgadas y 90Hz. Mayor duración de batería (30-50% más autonomía que el modelo base). WiFi 6E para descargas más rápidas. Almacenamiento de 512GB o 1TB NVMe SSD. Mismo procesador AMD custom con gráficos RDNA 2. Juega a miles de títulos de tu biblioteca Steam verificados para Deck. Dock opcional para conectar a TV y periféricos. Soporte para modificaciones de sistema operativo incluyendo Windows. Controles ergonómicos con trackpads precisos y giroscopios. Audio mejorado con DSP dedicado. Perfecta para juego AAA portátil con calidad PC.', 'consola', '/assets/imagenes/consolas/steamDeckOled.jpg'),
 ('Nintendo Switch 2', 499.99, 'Modelo revisado de Nintendo Switch con batería mejorada (4.5-9 horas vs 2.5-6.5 del original). Procesador Tegra optimizado que consume menos energía. Juega en TV, modo sobremesa o portátil con transición instantánea. Joy-Cons desmontables con motion controls y HD rumble. Pantalla táctil capacitiva de 6.2 pulgadas. 32GB de almacenamiento expandible con microSD hasta 2TB. Biblioteca de exclusivos Nintendo: Mario, Zelda, Pokemon, Smash Bros. Multijugador local para hasta 8 consolas sin WiFi. Compatible con amiibo y Nintendo Switch Online. La consola híbrida perfecta para familias y gaming flexible.', 'consola', '/assets/imagenes/consolas/switch2.jpg');
+
 
 -- ============================================
 -- INSERTS PARA PRODUCTOS BASE - MERCHANDISING
@@ -113,6 +117,7 @@ INSERT INTO productos (nombre, precio, descripcion, tipo, imagen_url) VALUES
 ('Figura Coleccionable Psyduck Deluxe', 29.99, 'Figura premium de Psyduck en pose clásica sujetándose la cabeza con expresión confundida. Mide 18cm de altura con detalles esculpidos meticulosos. Pintado a mano con colores vibrantes: amarillo brillante, pico naranja y ojos negros expresivos. Incluye base de display con logo Pokémon con efecto de agua translúcido simulando una piscina. Fabricada en PVC y ABS de alta calidad con 8 puntos de articulación para diferentes poses. Empaque de ventana premium perfecto para coleccionistas. Licencia oficial The Pokémon Company. Compatible con otras figuras de la línea Pokémon Select. Recomendada para mayores de 6 años. Edición limitada numerada con certificado de autenticidad.', 'merchandising', '/assets/imagenes/merchandising/figuraPsyduck.jpg'),
 ('Taza 3D Psyduck con Tapa', 18.99, 'Taza de cerámica premium de 400ml con diseño 3D de la cabeza de Psyduck como tapa removible. El cuerpo de la taza presenta ilustraciones de Psyduck en diferentes expresiones confundidas y usando movimientos tipo Agua. Tapa de silicona con forma de cabeza de Psyduck que actúa como sello hermético para mantener bebidas calientes. Asa ergonómica lateral con forma de ala. Apta para microondas (sin la tapa) y lavavajillas (rack superior). Colores amarillo vibrante y detalles pintados. Fabricada en cerámica de alta calidad libre de BPA. Licencia oficial The Pokémon Company. Perfecta para fans de Psyduck que quieren llevar a su Pokémon favorito a la oficina. Viene en caja de regalo decorada.', 'merchandising', '/assets/imagenes/merchandising/tazaPsyduck.jpg'),
 ('Llavero Psyduck de Goma', 9.99, 'Llavero adorable de Psyduck fabricado en goma de silicona suave y flexible de alta calidad. Diseño chibi kawaii de 6cm con Psyduck en pose icónica sujetándose la cabeza. Colores amarillo brillante y detalles pintados a mano. Anilla metálica resistente de acero inoxidable de 3cm. Material duradero resistente a golpes y caídas. No se decolora con el uso. Perfecto para llaves, mochilas, estuches o como charm decorativo. Ligero y compacto. Empaque con diseño de Psyduck y código QR de autenticidad. Licencia oficial The Pokémon Company. Ideal como regalo económico para fans de Pokémon. Parte de la colección de llaveros Pokémon con más de 50 especies disponibles.', 'merchandising', '/assets/imagenes/merchandising/llaveroPsyduck.jpg');
+
 
 -- ============================================
 -- INSERTS PARA JUEGOS (Especialización)
@@ -151,6 +156,7 @@ INSERT INTO juegos (producto_id, genero, edad_minima) VALUES
 (31, 'RPG', 7),          -- Pokémon Legends Arceus
 (32, 'RPG', 7),          -- Pokémon Brilliant Diamond
 (33, 'RPG', 7);          -- Pokémon Shining Pearl
+
 
 -- ============================================
 -- INSERTS PARA JUEGOS_PLATAFORMAS (N:N)
@@ -303,6 +309,7 @@ INSERT INTO juegos_plataformas (juego_id, plataforma_id, control_stock) VALUES
 -- Pokémon Shining Pearl (solo Switch) - stock 24
 (33, 3, 24);
 
+
 -- ============================================
 -- INSERTS PARA CONSOLAS (Especialización)
 -- ============================================
@@ -319,6 +326,7 @@ INSERT INTO consolas (producto_id, capacidad_almacenamiento, color, fabricante, 
 (43, '1TB HDD', 'Negro', 'Microsoft', 6, 9),
 (44, '512GB SSD', 'Negro', 'Valve', 7, 5),
 (45, '32GB', 'Rojo y Azul', 'Nintendo', 3, 14);
+
 
 -- ============================================
 -- INSERTS PARA MERCHANDISING (Especialización)
@@ -355,6 +363,7 @@ INSERT INTO merchandising (producto_id, categoria, control_stock) VALUES
 (74, 'Decoración', 40),           -- Taza Psyduck
 (75, 'Accesorios', 50);           -- Llavero Psyduck
 
+
 -- ============================================
 -- INSERTS PARA DIRECCIONES
 -- ============================================
@@ -368,6 +377,7 @@ INSERT INTO direcciones (usuario_id, calle, numero_casa, ciudad, codigo_postal, 
 (6, 'Calle León y Castillo', '234', 'Las Palmas de Gran Canaria', '35005', 'canarias', '678901234'),
 (2, 'Calle Colón', '8', 'Valencia', '46004', 'peninsula', '689012345');
 
+
 -- ============================================
 -- INSERTS PARA MÉTODOS DE PAGO
 -- ============================================
@@ -380,6 +390,7 @@ INSERT INTO metodo_pago (tipo, detalles, usuario_id) VALUES
 ('PayPal', 'ana.fernandez@email.com', 4),
 ('Tarjeta de Crédito', '**** **** **** 3456 - Mastercard', 5),
 ('Bizum', '612345678', 6);
+
 
 -- ============================================
 -- INSERTS PARA CARRITO
@@ -397,6 +408,7 @@ INSERT INTO carrito (usuario_id, producto_id, plataforma_id, cantidad) VALUES
 (5, 52, 0, 1),  -- Luis: Taza Minecraft (merchandising)
 (6, 6, 1, 1),   -- Sara: Cyberpunk (PS5)
 (6, 54, 0, 1);  -- Sara: Alfombrilla Cyberpunk (merchandising)
+
 
 -- ============================================
 -- INSERTS PARA WISHLIST
@@ -419,6 +431,7 @@ INSERT INTO wishlist (usuario_id, producto_id) VALUES
 (6, 35),  -- Sara quiere Xbox Series X
 (6, 10);  -- Sara quiere The Witcher 3
 
+
 -- ============================================
 -- INSERTS PARA PEDIDOS
 -- ============================================
@@ -430,6 +443,7 @@ INSERT INTO pedidos (usuario_id, metodo_pago_id, total, estado, direccion_id, te
 (1, 2, 24.99, 'entregado', 1, '612345678', NULL),
 (5, 7, 129.97, 'enviado', 6, '656789012', 'Llamar antes de entregar'),
 (6, 8, 449.98, 'procesando', 7, '667890123', NULL);
+
 
 -- ============================================
 -- INSERTS PARA PEDIDOS_PRODUCTOS
