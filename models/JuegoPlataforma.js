@@ -22,10 +22,6 @@ const JuegoPlataforma = sequelize.define('JuegoPlataforma', {
       key: 'id'
     }
   },
-  fecha_lanzamiento: {
-    type: DataTypes.DATEONLY,
-    allowNull: true
-  },
   control_stock: {
     type: DataTypes.INTEGER,
     allowNull: false,
