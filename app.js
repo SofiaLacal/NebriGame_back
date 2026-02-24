@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { sequelize } = require("./models"); // Importar sequelize
+const { sequelize } = require("./models"); //Importar sequelize
 
 const app = express();
 
@@ -10,7 +10,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Serve static files from assets directory
+//Servimos desde BD archivos estáticos desde assets
 app.use("/assets", express.static(__dirname + "/assets"));
 
 const PORT = 4004;
