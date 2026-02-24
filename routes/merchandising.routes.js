@@ -29,13 +29,10 @@ router.get("/", async (req, res) => {
 });
 
 // ---------------- FILTRAR POR NOMBRE DEL JUEGO ----------------
-// Nota: En tu BD actual no hay campo "juegoAsociado" en la tabla merchandising
-// Si lo necesitas, deberás agregarlo a la tabla primero
 router.get("/juego/:nombreJuego", async (req, res) => {
     try {
         const nombreJuego = req.params.nombreJuego;
 
-        // Búsqueda por nombre del producto que contenga el nombre del juego
         const merchandising = await Producto.findAll({
             where: { 
                 tipo: 'merchandising',

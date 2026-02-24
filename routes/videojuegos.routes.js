@@ -23,6 +23,7 @@ router.get("/", async (req, res) => {
             total: juegos.length,
             videojuegos: juegos
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -65,6 +66,7 @@ router.get("/:nombre", async (req, res) => {
             success: true,
             videojuego
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -104,6 +106,7 @@ router.get("/genero/:genero", async (req, res) => {
             genero: genero,
             videojuegos: juegosConImagenes
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -143,6 +146,7 @@ router.get("/consola/:nombreConsola", async (req, res) => {
             consola: nombreConsola,
             videojuegos: juegosConImagenes
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -182,6 +186,7 @@ router.get("/edad/:edadMinima", async (req, res) => {
             edadMinima: edadMinima,
             videojuegos: juegosConImagenes
         });
+        
     } catch (error) {
         res.status(500).json({
             success: false,

@@ -3,18 +3,22 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma, Plataforma } = require("../models");
 
-// Helpers para control de stock
-// plataformaId: opcional; para juegos, si existe, devuelve stock de esa plataforma; si no, suma total
+//Helpers para control de stock
+//plataformaId: opcional; para juegos, si existe, devuelve stock de esa plataforma; si no, suma total
 async function getStockDisponible(productoId, plataformaId = null) {
     const producto = await Producto.findByPk(productoId);
+    
     if (!producto) return 0;
+    
     switch (producto.tipo) {
         case 'merchandising':
             const m = await Merchandising.findOne({ where: { producto_id: productoId } });
             return m ? m.control_stock : 0;
+
         case 'consola':
             const c = await Consola.findOne({ where: { producto_id: productoId } });
             return c ? c.control_stock : 0;
+
         case 'juego':
             if (plataformaId != null && plataformaId !== 0) {
                 const jp = await JuegoPlataforma.findOne({
@@ -22,8 +26,11 @@ async function getStockDisponible(productoId, plataformaId = null) {
                 });
                 return jp ? (jp.control_stock || 0) : 0;
             }
+
             const jpAll = await JuegoPlataforma.findAll({ where: { juego_id: productoId } });
+
             return jpAll.reduce((sum, row) => sum + (row.control_stock || 0), 0);
+
         default:
             return 0;
     }
@@ -32,14 +39,18 @@ async function getStockDisponible(productoId, plataformaId = null) {
 async function reducirStock(productoId, cantidad, transaction = null, plataformaId = null) {
     const opts = transaction ? { transaction } : {};
     const producto = await Producto.findByPk(productoId);
+
     if (!producto || cantidad <= 0) return;
+
     switch (producto.tipo) {
         case 'merchandising':
             await Merchandising.decrement('control_stock', { by: cantidad, where: { producto_id: productoId }, ...opts });
             break;
+
         case 'consola':
             await Consola.decrement('control_stock', { by: cantidad, where: { producto_id: productoId }, ...opts });
             break;
+
         case 'juego':
             if (plataformaId != null && plataformaId !== 0) {
                 await JuegoPlataforma.decrement('control_stock', {
@@ -47,6 +58,7 @@ async function reducirStock(productoId, cantidad, transaction = null, plataforma
                     where: { juego_id: productoId, plataforma_id: plataformaId },
                     ...opts
                 });
+
             } else {
                 let restante = cantidad;
                 const plataformas = await JuegoPlataforma.findAll({ where: { juego_id: productoId }, order: [['plataforma_id']], ...opts });
@@ -63,7 +75,8 @@ async function reducirStock(productoId, cantidad, transaction = null, plataforma
                     }
                 }
             }
-            break;
+    break;
+
     }
 }
 
@@ -77,6 +90,7 @@ router.get("/", async (req, res) => {
             total: usuarios.length,
             usuarios
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -96,18 +110,22 @@ router.post("/login", async (req, res) => {
                 email: email,
             }
         });
+
         if (!usuario) {
             return res.status(401).json({
                 success: false,
                 error: "Credenciales incorrectas"
             });
         }
+
         const passwordMatch = await bcrypt.compare(contrasenna, usuario.contrasenna);
+
         if (!passwordMatch) {
             return res.status(401).json({
                 success: false,
                 error: "Credenciales incorrectas"
             });
+
         } else {
             const usuarioData = {
                 id: usuario.id,
@@ -123,6 +141,7 @@ router.post("/login", async (req, res) => {
                 usuarioData
             });
         }
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -141,6 +160,7 @@ router.post("/registro", async (req, res) => {
                 email: email
             }
         });
+
         if (usuario) {
             return res.status(400).json({
                 success: false,
@@ -149,6 +169,7 @@ router.post("/registro", async (req, res) => {
             });
             
         }
+
         const hashedPassword = await bcrypt.hash(contrasenna, 10);
         const datosUsuario = { nombre, apellido1, apellido2, email, contrasenna: hashedPassword };
         const nuevoUsuario = await Usuario.create(datosUsuario);
@@ -163,11 +184,13 @@ router.post("/registro", async (req, res) => {
             email: nuevoUsuario.email,
             fecha_registro: nuevoUsuario.fecha_registro
         }
+
         res.status(201).json({
             success: true,
             mensaje: "Usuario registrado correctamente",
             usuario: usuarioData
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -191,6 +214,7 @@ router.get("/:userId", async (req, res) => {
             email: usuario.email,
             fecha_registro: usuario.fecha_registro
         }
+
         if (!usuario) {
             return res.status(404).json({
                 success: false,
@@ -202,6 +226,7 @@ router.get("/:userId", async (req, res) => {
             success: true,
             usuario: usuarioData
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -237,6 +262,7 @@ router.patch("/:userId", async (req, res) => {
                 error: "Debes indicar la contraseña nueva para cambiarla"
             });
         }
+
         if (contrasenna) {
             if (!contrasennaActual) {
                 return res.status(400).json({
@@ -285,12 +311,14 @@ router.patch("/:userId", async (req, res) => {
 router.delete("/:userId", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId, 10);
+
         if (isNaN(userId) || userId <= 0) {
             return res.status(400).json({
                 success: false,
                 error: "ID de usuario no válido"
             });
         }
+
         const usuario = await Usuario.findByPk(userId);
 
         if (!usuario) {
@@ -306,6 +334,7 @@ router.delete("/:userId", async (req, res) => {
             success: true,
             mensaje: "Usuario eliminado correctamente"
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -319,7 +348,7 @@ router.delete("/:userId", async (req, res) => {
 // CARRITO
 // ============================================
 
-// Ver carrito
+//Ver carrito
 router.get("/:userId/carrito", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -337,6 +366,7 @@ router.get("/:userId/carrito", async (req, res) => {
             total: carrito.length,
             carrito
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -346,7 +376,7 @@ router.get("/:userId/carrito", async (req, res) => {
     }
 });
 
-// Validar stock del carrito antes de continuar compra
+//Validar stock del carrito antes de continuar compra
 router.get("/:userId/carrito/validar-stock", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -354,7 +384,9 @@ router.get("/:userId/carrito/validar-stock", async (req, res) => {
             where: { usuario_id: userId },
             include: [{ model: Producto, as: 'producto' }]
         });
+
         const errores = [];
+
         for (const item of carrito) {
             const producto = await Producto.findByPk(item.producto_id);
             const platId = producto?.tipo === 'juego' && item.plataforma_id ? item.plataforma_id : null;
@@ -369,11 +401,13 @@ router.get("/:userId/carrito/validar-stock", async (req, res) => {
                 });
             }
         }
+
         res.json({
             success: true,
             valido: errores.length === 0,
             errores
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -383,34 +417,39 @@ router.get("/:userId/carrito/validar-stock", async (req, res) => {
     }
 });
 
-// Ver si un producto está en el carrito
+//Ver si un producto está en el carrito
 router.get("/:userId/carrito/:productoId", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const productoId = parseInt(req.params.productoId);
+
         if (!userId || !productoId) {
             return res.status(400).json({
                 success: false,
                 error: "Usuario o producto no encontrado"
             });
         }
+
         const item = await Carrito.findOne({
             where: {
                 usuario_id: userId,
                 producto_id: productoId
             }
         });
+
         if (!item) {
             return res.status(404).json({
                 success: false,
                 error: "Producto no encontrado en el carrito"
             });
         }
+
         return res.json({
             success: true,
             item: true
         });
     }
+
     catch (error) {
         res.status(500).json({
             success: false,
@@ -420,7 +459,7 @@ router.get("/:userId/carrito/:productoId", async (req, res) => {
     }
 });
 
-// Añadir al carrito
+//Añadir al carrito
 router.post("/:userId/carrito", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -428,7 +467,7 @@ router.post("/:userId/carrito", async (req, res) => {
         const cant = Math.max(1, parseInt(cantidad) || 1);
         const plataformaId = producto_id && plataforma_id != null ? parseInt(plataforma_id) || 0 : 0;
 
-        // Verificar que el producto existe
+        //Verificar que el producto existe
         const producto = await Producto.findByPk(producto_id);
         if (!producto) {
             return res.status(404).json({
@@ -437,7 +476,7 @@ router.post("/:userId/carrito", async (req, res) => {
             });
         }
 
-        // Para juegos, plataforma_id es obligatorio (distinto de 0)
+        //Para juegos, plataforma_id es obligatorio (distinto de 0)
         if (producto.tipo === 'juego' && (!plataformaId || plataformaId === 0)) {
             return res.status(400).json({
                 success: false,
@@ -502,7 +541,7 @@ router.post("/:userId/carrito", async (req, res) => {
     }
 });
 
-// Actualizar cantidad en carrito
+//Actualizar cantidad en carrito
 router.put("/:userId/carrito/:productoId", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -535,6 +574,7 @@ router.put("/:userId/carrito/:productoId", async (req, res) => {
         const producto = await Producto.findByPk(productoId);
         const platIdForStock = producto?.tipo === 'juego' ? plataformaId : null;
         const stockDisponible = await getStockDisponible(productoId, platIdForStock);
+
         if (cantidad > stockDisponible) {
             return res.status(400).json({
                 success: false,
@@ -552,6 +592,7 @@ router.put("/:userId/carrito/:productoId", async (req, res) => {
             mensaje: "Cantidad actualizada",
             carrito: item
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -590,6 +631,7 @@ router.delete("/:userId/carrito/:productoId", async (req, res) => {
             success: true,
             mensaje: "Producto eliminado del carrito"
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -620,7 +662,7 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
             });
         }
 
-        // Verificar stock de todos los items antes de crear el pedido
+        //Verificar stock de todos los items antes de crear el pedido
         for (const item of itemsCarrito) {
             const platId = item.producto?.tipo === 'juego' && item.plataforma_id ? item.plataforma_id : null;
             const stockDisponible = await getStockDisponible(item.producto_id, platId);
@@ -691,6 +733,7 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
             mensaje: "Compra realizada correctamente",
             pedido: nuevoPedido
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -726,7 +769,7 @@ router.get("/:userId/historial-compras", async (req, res) => {
             order: [['fecha_pedido', 'DESC']]
         });
 
-        // Formatear para el frontend
+        //Formatear para el frontend
         const pedidosFormateados = pedidos.map(pedido => ({
             id: pedido.id,
             fecha: pedido.fecha_pedido,
@@ -739,6 +782,7 @@ router.get("/:userId/historial-compras", async (req, res) => {
                 cantidad: detalle.cantidad,
                 precio: parseFloat(detalle.precio_unitario).toFixed(2)
             })),
+
             envio: pedido.direccion ? {
                 calle: pedido.direccion.calle,
                 numeroCasa: pedido.direccion.numero_casa,
@@ -754,6 +798,7 @@ router.get("/:userId/historial-compras", async (req, res) => {
             total: pedidosFormateados.length,
             pedidos: pedidosFormateados
         });
+
     } catch (error) {
         console.error('Error al obtener historial:', error);
         res.status(500).json({
@@ -779,13 +824,13 @@ router.post("/:userId/pedidos", async (req, res) => {
             });
         }
 
-        // Obtener teléfono de la dirección o usar uno por defecto
+        //Obtener teléfono de la dirección o usar uno por defecto
         const telefono = direccion?.telefono || direccion?.telefonoContacto || '000000000';
         
-        // Obtener o crear direccion_id
+        //Obtener o crear direccion_id
         let direccionId = direccion?.id;
         
-        // Si no hay ID de dirección, crear una nueva (temporal)
+        //Si no hay ID de dirección, crear una nueva (temporal)
         if (!direccionId && direccion) {
             const nuevaDireccion = await Direccion.create({
                 usuario_id: userId,
@@ -799,7 +844,7 @@ router.post("/:userId/pedidos", async (req, res) => {
             direccionId = nuevaDireccion.id;
         }
         
-        // Si aún no hay direccion_id, usar una por defecto o fallar
+        //Si aún no hay direccion_id, usar una por defecto o fallar
         if (!direccionId) {
             return res.status(400).json({
                 success: false,
@@ -814,7 +859,7 @@ router.post("/:userId/pedidos", async (req, res) => {
             });
         }
 
-        // Verificar que el método de pago pertenece al usuario
+        //Verificar que el método de pago pertenece al usuario
         const metodoPago = await MetodoPago.findOne({
             where: { id: metodo_pago_id, usuario_id: userId }
         });
@@ -825,7 +870,7 @@ router.post("/:userId/pedidos", async (req, res) => {
             });
         }
 
-        // Verificar stock de todos los productos antes de crear el pedido
+        //Verificar stock de todos los productos antes de crear el pedido
         for (const prod of productos) {
             const p = await Producto.findByPk(prod.producto_id);
             const platId = p?.tipo === 'juego' && prod.plataforma_id ? prod.plataforma_id : null;
@@ -838,7 +883,7 @@ router.post("/:userId/pedidos", async (req, res) => {
             }
         }
 
-        // Crear el pedido y reducir stock en transacción
+        //Crear el pedido y reducir stock en transacción
         const t = await sequelize.transaction();
         let nuevoPedido;
 
@@ -853,7 +898,7 @@ router.post("/:userId/pedidos", async (req, res) => {
             fecha_pedido: fecha || new Date()
         }, { transaction: t });
 
-            // Crear los detalles del pedido y reducir stock
+            //Crear los detalles del pedido y reducir stock
             for (const prod of productos) {
                 const platId = prod.plataforma_id && prod.plataforma_id > 0 ? prod.plataforma_id : null;
                 await PedidoProducto.create({
@@ -868,7 +913,7 @@ router.post("/:userId/pedidos", async (req, res) => {
                 await reducirStock(prod.producto_id, prod.cantidad, t, platId);
             }
 
-            // Vaciar el carrito
+            //Vaciar el carrito
             await Carrito.destroy({
                 where: { usuario_id: userId },
                 transaction: t
@@ -899,7 +944,7 @@ router.post("/:userId/pedidos", async (req, res) => {
 // WISHLIST
 // ============================================
 
-// Ver wishlist
+//Ver wishlist
 router.get("/:userId/wishlist", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -917,6 +962,7 @@ router.get("/:userId/wishlist", async (req, res) => {
             total: wishlist.length,
             wishlist
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -926,13 +972,13 @@ router.get("/:userId/wishlist", async (req, res) => {
     }
 });
 
-// Añadir a wishlist
+//Añadir a wishlist
 router.post("/:userId/wishlist", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const { producto_id } = req.body;
 
-        // Verificar si ya existe
+        //Verificar si ya existe
         const existente = await Wishlist.findOne({
             where: {
                 usuario_id: userId,
@@ -966,7 +1012,7 @@ router.post("/:userId/wishlist", async (req, res) => {
     }
 });
 
-// Eliminar de wishlist
+//Eliminar de wishlist
 router.delete("/:userId/wishlist/:productoId", async (req, res) => {
     try {
         const { userId, productoId } = req.params;
@@ -989,6 +1035,7 @@ router.delete("/:userId/wishlist/:productoId", async (req, res) => {
             success: true,
             mensaje: "Eliminado de favoritos"
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -998,7 +1045,7 @@ router.delete("/:userId/wishlist/:productoId", async (req, res) => {
     }
 });
 
-// Eliminar wishlist completa
+//Eliminar wishlist completa
 router.delete("/:userId/wishlist", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -1011,6 +1058,7 @@ router.delete("/:userId/wishlist", async (req, res) => {
             success: true,
             mensaje: "Wishlist eliminada completamente"
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -1024,7 +1072,7 @@ router.delete("/:userId/wishlist", async (req, res) => {
 // DIRECCIONES
 // ============================================
 
-// Ver direcciones
+//Ver direcciones
 router.get("/:userId/direcciones", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -1048,6 +1096,7 @@ router.get("/:userId/direcciones", async (req, res) => {
             total: direccionesFormateadas.length,
             direcciones: direccionesFormateadas
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -1057,7 +1106,7 @@ router.get("/:userId/direcciones", async (req, res) => {
     }
 });
 
-// Añadir dirección
+//Añadir dirección
 router.post("/:userId/direcciones", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -1085,6 +1134,7 @@ router.post("/:userId/direcciones", async (req, res) => {
             mensaje: "Dirección añadida",
             direccion: nuevaDireccion
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -1094,7 +1144,7 @@ router.post("/:userId/direcciones", async (req, res) => {
     }
 });
 
-// Eliminar dirección
+//Eliminar dirección
 router.delete("/:userId/direcciones/:direccionId", async (req, res) => {
     try {
         const { userId, direccionId } = req.params;
@@ -1117,6 +1167,7 @@ router.delete("/:userId/direcciones/:direccionId", async (req, res) => {
             success: true,
             mensaje: "Dirección eliminada"
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -1130,7 +1181,7 @@ router.delete("/:userId/direcciones/:direccionId", async (req, res) => {
 // MÉTODOS DE PAGO
 // ============================================
 
-// Ver métodos de pago
+//Ver métodos de pago
 router.get("/:userId/metodos-pago", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -1144,6 +1195,7 @@ router.get("/:userId/metodos-pago", async (req, res) => {
             total: metodosPago.length,
             metodosPago
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -1153,7 +1205,7 @@ router.get("/:userId/metodos-pago", async (req, res) => {
     }
 });
 
-// Añadir método de pago
+//Añadir método de pago
 router.post("/:userId/metodos-pago", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -1170,6 +1222,7 @@ router.post("/:userId/metodos-pago", async (req, res) => {
             mensaje: "Método de pago añadido",
             metodoPago: nuevoMetodo
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -1179,7 +1232,7 @@ router.post("/:userId/metodos-pago", async (req, res) => {
     }
 });
 
-// Actualizar método de pago
+//Actualizar método de pago
 router.put("/:userId/metodos-pago/:metodoId", async (req, res) => {
     try {
         const { userId, metodoId } = req.params;
@@ -1214,7 +1267,7 @@ router.put("/:userId/metodos-pago/:metodoId", async (req, res) => {
     }
 });
 
-// Eliminar método de pago
+//Eliminar método de pago
 router.delete("/:userId/metodos-pago/:metodoId", async (req, res) => {
     try {
         const { userId, metodoId } = req.params;
@@ -1237,6 +1290,7 @@ router.delete("/:userId/metodos-pago/:metodoId", async (req, res) => {
             success: true,
             mensaje: "Método de pago eliminado"
         });
+        
     } catch (error) {
         res.status(500).json({
             success: false,
