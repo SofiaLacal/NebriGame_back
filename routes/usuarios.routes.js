@@ -641,7 +641,9 @@ router.delete("/:userId/carrito/:productoId", async (req, res) => {
     }
 });
 
-// Completar compra (crear pedido desde carrito)
+// ============================================
+// CREAR PEDIDO DESDE CARRITO
+// ============================================
 router.post("/:userId/carrito/comprar", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -809,9 +811,7 @@ router.get("/:userId/historial-compras", async (req, res) => {
     }
 });
 
-// ============================================
-// CREAR PEDIDO DIRECTO
-// ============================================
+
 router.post("/:userId/pedidos", async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
