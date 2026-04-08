@@ -15,6 +15,24 @@ const sequelize = new Sequelize(
   } 
 );
 
+//################################ TODO ############################################
+//Para cuando usemos el .env con toda la configuración de la BD y el puerto
+
+/* 
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  { host: process.env.DB_HOST,
+    dialect: 'mysql',
+    logging: false,
+    pool: {  
+      max: 10,  // Máximo de conexiones simultáneas 
+      min: 0    // Mínimo de conexiones siempre abiertas
+    }
+   }
+); */
+
 sequelize.authenticate()
 
   .then(() => {

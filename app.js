@@ -15,6 +15,10 @@ app.use("/assets", express.static(__dirname + "/assets"));
 
 const PORT = 4004;
 
+//################################ TODO ######################################################################## 
+//Para cuando usemos el .env con toda la configuración de la BD y el puerto :)
+/* const PORT = process.env.PORT || 4004; */
+
 // -------- IMPORTAR RUTAS --------
 const generalRoutes = require("./routes/general.routes");
 const usuarioRoutes = require("./routes/usuarios.routes");
