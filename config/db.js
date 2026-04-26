@@ -1,25 +1,6 @@
 const {Sequelize} = require("sequelize");
 
 const sequelize = new Sequelize(
-  'nebrigame', 
-  'root', 
-  '', 
-  {
-    host: 'localhost',
-    dialect: 'mysql',
-    logging: false,
-    pool: {  
-      max: 10,  // Máximo de conexiones simultáneas 
-      min: 0    // Mínimo de conexiones siempre abiertas
-    }
-  } 
-);
-
-//################################ TODO ############################################
-//Para cuando usemos el .env con toda la configuración de la BD y el puerto
-
-/* 
-const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
   process.env.DB_PASSWORD,
@@ -31,7 +12,7 @@ const sequelize = new Sequelize(
       min: 0    // Mínimo de conexiones siempre abiertas
     }
    }
-); */
+); 
 
 sequelize.authenticate()
 
@@ -42,6 +23,5 @@ sequelize.authenticate()
     console.log('Error al conectar a la BD: ', error)
 
   });
-
 
 module.exports = sequelize;
