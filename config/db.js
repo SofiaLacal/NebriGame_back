@@ -1,18 +1,20 @@
 const {Sequelize} = require("sequelize");
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  { host: process.env.DB_HOST,
-    dialect: 'mysql',
-    logging: false,
-    pool: {  
-      max: 10,  // Máximo de conexiones simultáneas 
-      min: 0    // Mínimo de conexiones siempre abiertas
-    }
-   }
-); 
+// Valores por defecto para desarrollo local si el .env está vacío o no define la clave
+const dbName = process.env.DB_NAME || "nebrigame";
+const dbUser = process.env.DB_USER || "root";
+const dbHost = process.env.DB_HOST || "localhost";
+const dbPassword = process.env.DB_PASSWORD ?? "";
+
+const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+  host: dbHost,
+  dialect: "mysql",
+  logging: false,
+  pool: {
+    max: 10,
+    min: 0,
+  },
+}); 
 
 sequelize.authenticate()
 
