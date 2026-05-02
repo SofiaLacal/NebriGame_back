@@ -206,6 +206,13 @@ router.get("/:userId", async (req, res) => {
         const userId = parseInt(req.params.userId);
         const usuario = await Usuario.findByPk(userId);
 
+        if (!usuario) {
+            return res.status(404).json({
+                success: false,
+                error: "Usuario no encontrado"
+            });
+        }
+
         const usuarioData = {
             id: usuario.id,
             nombre: usuario.nombre,
@@ -215,12 +222,6 @@ router.get("/:userId", async (req, res) => {
             fecha_registro: usuario.fecha_registro
         }
 
-        if (!usuario) {
-            return res.status(404).json({
-                success: false,
-                error: "Usuario no encontrado"
-            });
-        }
 
         res.json({
             success: true,
