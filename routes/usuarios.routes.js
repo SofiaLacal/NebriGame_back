@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const { authenticateAccessToken, requireSameUser } = require("../middleware/auth.middleware");
+const { signAccess } = require("../utils/jwt");
 const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma, Plataforma } = require("../models");
 
 //Helpers para control de stock
@@ -134,11 +136,13 @@ router.post("/login", async (req, res) => {
                 apellido2: usuario.apellido2,
                 email: usuario.email,
                 fecha_registro: usuario.fecha_registro
-            }
+            };
+            const accessToken = signAccess(usuario.id);
             res.json({
                 success: true,
                 mensaje: "Login correcto",
-                usuarioData
+                usuarioData,
+                accessToken
             });
         }
 
@@ -183,12 +187,15 @@ router.post("/registro", async (req, res) => {
             apellido2: nuevoUsuario.apellido2,
             email: nuevoUsuario.email,
             fecha_registro: nuevoUsuario.fecha_registro
-        }
+        };
+
+        const accessToken = signAccess(nuevoUsuario.id);
 
         res.status(201).json({
             success: true,
             mensaje: "Usuario registrado correctamente",
-            usuario: usuarioData
+            usuario: usuarioData,
+            accessToken
         });
 
     } catch (error) {
@@ -201,7 +208,7 @@ router.post("/registro", async (req, res) => {
 });
 
 // ---------------- PERFIL ----------------
-router.get("/:userId", async (req, res) => {
+router.get("/:userId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const usuario = await Usuario.findByPk(userId);
@@ -238,7 +245,7 @@ router.get("/:userId", async (req, res) => {
 });
 
 // ---------------- ACTUALIZAR PERFIL ----------------
-router.patch("/:userId", async (req, res) => {
+router.patch("/:userId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const usuario = await Usuario.findByPk(userId);
@@ -309,7 +316,7 @@ router.patch("/:userId", async (req, res) => {
 });
 
 // ---------------- ELIMINAR USUARIO ----------------
-router.delete("/:userId", async (req, res) => {
+router.delete("/:userId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId, 10);
 
@@ -350,7 +357,7 @@ router.delete("/:userId", async (req, res) => {
 // ============================================
 
 //Ver carrito
-router.get("/:userId/carrito", async (req, res) => {
+router.get("/:userId/carrito", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         
@@ -378,7 +385,7 @@ router.get("/:userId/carrito", async (req, res) => {
 });
 
 //Validar stock del carrito antes de continuar compra
-router.get("/:userId/carrito/validar-stock", async (req, res) => {
+router.get("/:userId/carrito/validar-stock", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const carrito = await Carrito.findAll({
@@ -419,7 +426,7 @@ router.get("/:userId/carrito/validar-stock", async (req, res) => {
 });
 
 //Ver si un producto está en el carrito
-router.get("/:userId/carrito/:productoId", async (req, res) => {
+router.get("/:userId/carrito/:productoId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const productoId = parseInt(req.params.productoId);
@@ -461,7 +468,7 @@ router.get("/:userId/carrito/:productoId", async (req, res) => {
 });
 
 //Añadir al carrito
-router.post("/:userId/carrito", async (req, res) => {
+router.post("/:userId/carrito", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const { producto_id, cantidad, plataforma_id } = req.body;
@@ -543,7 +550,7 @@ router.post("/:userId/carrito", async (req, res) => {
 });
 
 //Actualizar cantidad en carrito
-router.put("/:userId/carrito/:productoId", async (req, res) => {
+router.put("/:userId/carrito/:productoId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const productoId = parseInt(req.params.productoId);
@@ -604,7 +611,7 @@ router.put("/:userId/carrito/:productoId", async (req, res) => {
 });
 
 // Eliminar del carrito
-router.delete("/:userId/carrito/:productoId", async (req, res) => {
+router.delete("/:userId/carrito/:productoId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const productoId = parseInt(req.params.productoId);
@@ -645,7 +652,7 @@ router.delete("/:userId/carrito/:productoId", async (req, res) => {
 // ============================================
 // CREAR PEDIDO DESDE CARRITO
 // ============================================
-router.post("/:userId/carrito/comprar", async (req, res) => {
+router.post("/:userId/carrito/comprar", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const { metodo_pago_id, direccion_id, telefono_contacto, notas } = req.body;
@@ -749,7 +756,7 @@ router.post("/:userId/carrito/comprar", async (req, res) => {
 // ============================================
 // HISTORIAL DE COMPRAS
 // ============================================
-router.get("/:userId/historial-compras", async (req, res) => {
+router.get("/:userId/historial-compras", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
 
@@ -813,7 +820,7 @@ router.get("/:userId/historial-compras", async (req, res) => {
 });
 
 
-router.post("/:userId/pedidos", async (req, res) => {
+router.post("/:userId/pedidos", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const { productos, total, direccion, estado, fecha, metodo_pago_id } = req.body;
@@ -946,7 +953,7 @@ router.post("/:userId/pedidos", async (req, res) => {
 // ============================================
 
 //Ver wishlist
-router.get("/:userId/wishlist", async (req, res) => {
+router.get("/:userId/wishlist", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
 
@@ -974,7 +981,7 @@ router.get("/:userId/wishlist", async (req, res) => {
 });
 
 //Añadir a wishlist
-router.post("/:userId/wishlist", async (req, res) => {
+router.post("/:userId/wishlist", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const { producto_id } = req.body;
@@ -1014,7 +1021,7 @@ router.post("/:userId/wishlist", async (req, res) => {
 });
 
 //Eliminar de wishlist
-router.delete("/:userId/wishlist/:productoId", async (req, res) => {
+router.delete("/:userId/wishlist/:productoId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const { userId, productoId } = req.params;
 
@@ -1047,7 +1054,7 @@ router.delete("/:userId/wishlist/:productoId", async (req, res) => {
 });
 
 //Eliminar wishlist completa
-router.delete("/:userId/wishlist", async (req, res) => {
+router.delete("/:userId/wishlist", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
 
@@ -1074,7 +1081,7 @@ router.delete("/:userId/wishlist", async (req, res) => {
 // ============================================
 
 //Ver direcciones
-router.get("/:userId/direcciones", async (req, res) => {
+router.get("/:userId/direcciones", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
 
@@ -1108,7 +1115,7 @@ router.get("/:userId/direcciones", async (req, res) => {
 });
 
 //Añadir dirección
-router.post("/:userId/direcciones", async (req, res) => {
+router.post("/:userId/direcciones", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const { region, ciudad, codigoPostal, calle, numeroCasa, telefono } = req.body;
@@ -1146,7 +1153,7 @@ router.post("/:userId/direcciones", async (req, res) => {
 });
 
 //Eliminar dirección
-router.delete("/:userId/direcciones/:direccionId", async (req, res) => {
+router.delete("/:userId/direcciones/:direccionId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const { userId, direccionId } = req.params;
 
@@ -1183,7 +1190,7 @@ router.delete("/:userId/direcciones/:direccionId", async (req, res) => {
 // ============================================
 
 //Ver métodos de pago
-router.get("/:userId/metodos-pago", async (req, res) => {
+router.get("/:userId/metodos-pago", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
 
@@ -1207,7 +1214,7 @@ router.get("/:userId/metodos-pago", async (req, res) => {
 });
 
 //Añadir método de pago
-router.post("/:userId/metodos-pago", async (req, res) => {
+router.post("/:userId/metodos-pago", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
         const { tipo, detalles } = req.body;
@@ -1234,7 +1241,7 @@ router.post("/:userId/metodos-pago", async (req, res) => {
 });
 
 //Actualizar método de pago
-router.put("/:userId/metodos-pago/:metodoId", async (req, res) => {
+router.put("/:userId/metodos-pago/:metodoId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const { userId, metodoId } = req.params;
         
@@ -1269,7 +1276,7 @@ router.put("/:userId/metodos-pago/:metodoId", async (req, res) => {
 });
 
 //Eliminar método de pago
-router.delete("/:userId/metodos-pago/:metodoId", async (req, res) => {
+router.delete("/:userId/metodos-pago/:metodoId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
         const { userId, metodoId } = req.params;
 
