@@ -15,12 +15,15 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD,
     },
+    tls: {
+        rejectUnauthorized: false
+    },
 });
 
-const sendEmail = async (to, subject, text, tryNumber = 0) => {
+const sendEmail = async ({to, subject, text, html, attachments },tryNumber = 0) => {
     if (tryNumber > 3) {
-        console.error("Error al enviar el email: se han intentado 3 veces");
-        throw new Error("Error al enviar el email: se han intentado 3 veces");
+        console.error("Error al enviar el email: se ha intentado 3 veces");
+        throw new Error("Error al enviar el email: se ha intentado 3 veces");
     }
 
     try {
@@ -30,11 +33,13 @@ const sendEmail = async (to, subject, text, tryNumber = 0) => {
             to,
             subject,
             text,
+            html, 
+            attachments,
         });
         console.log("Correo electrónico enviado a", to);
     } catch (error) {
         console.error("Error al enviar el email:", error.message);
-        return sendEmail(to, subject, text, tryNumber + 1);
+        return sendEmail({to, subject, text, html, attachments}, tryNumber + 1);
     }
 };
 

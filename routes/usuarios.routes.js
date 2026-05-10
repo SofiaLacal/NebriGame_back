@@ -5,6 +5,7 @@ const { authenticateAccessToken, requireSameUser } = require("../middleware/auth
 const { signAccess, signRefresh, verifyRefreshToken } = require("../utils/jwt");
 const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma, Plataforma } = require("../models");
 const { sendEmail } = require("../config/nodemailer");
+const { bienvenidaTemplate } = require("../templates/bienvenida.template");
 
 //Helpers para control de stock
 //plataformaId: opcional; para juegos, si existe, devuelve stock de esa plataforma; si no, suma total
@@ -195,7 +196,19 @@ router.post("/registro", async (req, res) => {
         const accessToken = signAccess(nuevoUsuario.id);
         const refreshToken = signRefresh(nuevoUsuario.id);
 
-        await sendEmail(nuevoUsuario.email, 'Bienvenido a NebriGame', 'Gracias por registrarte en NebriGame. Tu acceso ha sido creado correctamente.');
+        const { html, attachments } = bienvenidaTemplate({
+            nombre: nuevoUsuario.nombre,
+            apellido1: nuevoUsuario.apellido1,
+            email: nuevoUsuario.email
+        });
+
+        await sendEmail({
+            to: nuevoUsuario.email,
+            subject: "Bienvenid@ a NebriGame",
+            text: "Gracias por registrarte en NebriGame. Tu acceso ha sido creado correctamente.",
+            html,
+            attachments
+        });
 
         res.status(201).json({
             success: true,
@@ -208,7 +221,7 @@ router.post("/registro", async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "error al registrar usuario",
+            message: "Error al registrar usuario",
             error: error.message
         });
     }
