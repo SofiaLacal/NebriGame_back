@@ -18,7 +18,7 @@ const bienvenidaTemplate = ({ nombre, apellido1, email }) => {
 
             <!-- Cuerpo del mail -->
             <div style="padding:40px 30px; color:#333;">
-                <h1 style="color:#1a1a2e; margin-top:0;">¡Bienvenido, ${nombre}!</h1>
+                <h1 style="color:#1a1a2e; margin-top:0;">¡Bienvenid@, ${nombre}!</h1>
                 
                 <p style="font-size:16px; line-height:1.6;">
                     Hola <strong>${nombre} ${apellido1}</strong>, estamos encantados de darte la bienvenida a <strong>NebriGame</strong>, 
