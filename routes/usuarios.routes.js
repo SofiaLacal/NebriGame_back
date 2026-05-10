@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const { authenticateAccessToken, requireSameUser } = require("../middleware/auth.middleware");
 const { signAccess } = require("../utils/jwt");
 const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma, Plataforma } = require("../models");
+const { sendEmail } = require("../config/nodemailer");
 
 //Helpers para control de stock
 //plataformaId: opcional; para juegos, si existe, devuelve stock de esa plataforma; si no, suma total
@@ -190,6 +191,8 @@ router.post("/registro", async (req, res) => {
         };
 
         const accessToken = signAccess(nuevoUsuario.id);
+
+        await sendEmail(nuevoUsuario.email, 'Bienvenido a NebriGame', 'Gracias por registrarte en NebriGame. Tu acceso ha sido creado correctamente.');
 
         res.status(201).json({
             success: true,
