@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { authenticateAccessToken, requireSameUser } = require("../middleware/auth.middleware");
-const { signAccess } = require("../utils/jwt");
+const { signAccess, signRefresh, verifyRefreshToken } = require("../utils/jwt");
 const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma, Plataforma } = require("../models");
 const { sendEmail } = require("../config/nodemailer");
 
@@ -139,11 +139,13 @@ router.post("/login", async (req, res) => {
                 fecha_registro: usuario.fecha_registro
             };
             const accessToken = signAccess(usuario.id);
+            const refreshToken = signRefresh(usuario.id);
             res.json({
                 success: true,
                 mensaje: "Login correcto",
                 usuarioData,
-                accessToken
+                accessToken,
+                refreshToken,
             });
         }
 
@@ -191,6 +193,7 @@ router.post("/registro", async (req, res) => {
         };
 
         const accessToken = signAccess(nuevoUsuario.id);
+        const refreshToken = signRefresh(nuevoUsuario.id);
 
         await sendEmail(nuevoUsuario.email, 'Bienvenido a NebriGame', 'Gracias por registrarte en NebriGame. Tu acceso ha sido creado correctamente.');
 
@@ -198,7 +201,8 @@ router.post("/registro", async (req, res) => {
             success: true,
             mensaje: "Usuario registrado correctamente",
             usuario: usuarioData,
-            accessToken
+            accessToken,
+            refreshToken,
         });
 
     } catch (error) {
@@ -206,6 +210,39 @@ router.post("/registro", async (req, res) => {
             success: false,
             message: "error al registrar usuario",
             error: error.message
+        });
+    }
+});
+
+router.post("/refresh", async (req, res) => {
+    try {
+        const refreshToken = req.body && req.body.refreshToken;
+        if (!refreshToken) {
+            return res.status(400).json({ success: false, error: "refreshToken requerido" });
+        }
+        let decoded;
+        try {
+            decoded = verifyRefreshToken(refreshToken);
+        } catch {
+            return res.status(401).json({ success: false, error: "Refresh token inválido o caducado" });
+        }
+        const userId = parseInt(decoded.sub, 10);
+        if (Number.isNaN(userId)) {
+            return res.status(401).json({ success: false, error: "Token inválido" });
+        }
+        const usuario = await Usuario.findByPk(userId);
+        if (!usuario) {
+            return res.status(401).json({ success: false, error: "Usuario no encontrado" });
+        }
+        res.json({
+            success: true,
+            accessToken: signAccess(userId),
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al refrescar sesión",
+            error: error.message,
         });
     }
 });
