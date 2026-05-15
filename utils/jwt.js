@@ -48,9 +48,33 @@ function verifyRefreshToken(token) {
     return decoded;
 }
 
+// ============================================
+// PASSWORD RESET TOKENS
+// ============================================
+
+function signPasswordReset(userId) {
+    return jwt.sign(
+        { sub: String(userId), typ: "reset" },
+        accessSecret(),
+        { expiresIn: process.env.JWT_RESET_EXPIRES || "1h" }
+    );
+}
+
+function verifyPasswordResetToken(token) {
+    const decoded = jwt.verify(token, accessSecret());
+    if (decoded.typ !== "reset") {
+        const err = new Error("Token inválido");
+        err.name = "JsonWebTokenError";
+        throw err;
+    }
+    return decoded;
+}
+
 module.exports = {
     signAccess,
     signRefresh,
+    signPasswordReset,
     verifyAccessToken,
     verifyRefreshToken,
+    verifyPasswordResetToken,
 };

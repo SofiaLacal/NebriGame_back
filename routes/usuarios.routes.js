@@ -2,10 +2,13 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { authenticateAccessToken, requireSameUser } = require("../middleware/auth.middleware");
-const { signAccess, signRefresh, verifyRefreshToken } = require("../utils/jwt");
+const { signAccess, signRefresh, signPasswordReset, verifyRefreshToken, verifyPasswordResetToken } = require("../utils/jwt");
 const { sequelize, Usuario, Producto, Carrito, Wishlist, MetodoPago, Pedido, PedidoProducto, Direccion, Merchandising, Consola, Juego, JuegoPlataforma, Plataforma } = require("../models");
 const { sendEmail } = require("../config/nodemailer");
 const { bienvenidaTemplate } = require("../templates/bienvenida.template");
+const { eliminacionTemplate } = require("../templates/eliminacionCuenta.template");
+const { confirmacionPedidoTemplate } = require("../templates/confirmacionPedido.template");
+const { recuperarPasswordTemplate } = require("../templates/recuperarPassword.template");
 
 //Helpers para control de stock
 //plataformaId: opcional; para juegos, si existe, devuelve stock de esa plataforma; si no, suma total
@@ -260,6 +263,97 @@ router.post("/refresh", async (req, res) => {
     }
 });
 
+// ---------------- SOLICITAR RECUPERACIÓN DE CONTRASEÑA ----------------
+router.post("/forgot-password", async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const usuario = await Usuario.findOne({ where: { email } });
+
+        if (!usuario) {
+            return res.json({
+                success: true,
+                mensaje: "Si el email existe, recibirás instrucciones"
+            });
+        }
+
+        const resetToken = signPasswordReset(usuario.id);
+        const resetLink = `${process.env.FRONTEND_URL}/restablecer-contraseña?token=${resetToken}`;
+
+        const { html, attachments } = recuperarPasswordTemplate({
+            nombre: usuario.nombre,
+            resetLink
+        });
+
+        await sendEmail({
+            to: usuario.email,
+            subject: "Recupera tu contraseña - NebriGame",
+            text: `Hola ${usuario.nombre}, usa este enlace para recuperar tu contraseña: ${resetLink}`,
+            html,
+            attachments
+        });
+
+        res.json({
+            success: true,
+            mensaje: "Si el email existe, recibirás instrucciones"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al procesar la solicitud",
+            error: error.message
+        });
+    }
+});
+
+// ---------------- RESTABLECER CONTRASEÑA ----------------
+router.post("/reset-password", async (req, res) => {
+    try {
+        const { token, contrasennaNueva } = req.body;
+
+        if (!token || !contrasennaNueva) {
+            return res.status(400).json({
+                success: false,
+                error: "Faltan datos obligatorios"
+            });
+        }
+
+        let payload;
+        try {
+            payload = verifyPasswordResetToken(token);
+        } catch (err) {
+            return res.status(401).json({
+                success: false,
+                error: "El enlace ha caducado o no es válido"
+            });
+        }
+
+        const usuario = await Usuario.findByPk(payload.sub);
+        if (!usuario) {
+            return res.status(404).json({
+                success: false,
+                error: "Usuario no encontrado"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(contrasennaNueva, 10);
+        await usuario.update({ contrasenna: hashedPassword });
+
+        res.json({
+            success: true,
+            mensaje: "Contraseña restablecida correctamente"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al restablecer la contraseña",
+            error: error.message
+        });
+    }
+});
+
 // ---------------- PERFIL ----------------
 router.get("/:userId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
@@ -389,7 +483,22 @@ router.delete("/:userId", authenticateAccessToken, requireSameUser, async (req, 
             });
         }
 
+        const datosUsuario = {
+            nombre: usuario.nombre,
+            email: usuario.email
+        };
+
         await usuario.destroy();
+
+        //Enviar correo de confirmación de eliminación de la cuenta
+        const { html, attachments } = eliminacionTemplate(datosUsuario);
+        sendEmail({
+            to: datosUsuario.email,
+            subject: "Cuenta eliminada en NebriGame",
+            text: "Tu cuenta ha sido eliminada correctamente.",
+            html,
+            attachments
+        }).catch(err => console.error("Error enviando email de eliminación:", err));
 
         res.json({
             success: true,
@@ -984,6 +1093,53 @@ router.post("/:userId/pedidos", authenticateAccessToken, requireSameUser, async 
         } catch (err) {
             await t.rollback();
             throw err;
+        }
+
+        //Enviar correo de confirmación de pedido
+        try {
+            const user = await Usuario.findByPk(userId);
+
+            const productosConDetalles = await Promise.all(
+                productos.map(async (prod) => {
+                    const productoDb = await Producto.findByPk(prod.producto_id);
+                    let plataformaNombre = null;
+                    if (prod.plataforma_id && prod.plataforma_id > 0) {
+                        const plat = await Plataforma.findByPk(prod.plataforma_id);
+                        plataformaNombre = plat?.nombre || null;
+                    }
+                    return {
+                        nombre: productoDb?.nombre || "Producto",
+                        plataforma: plataformaNombre,
+                        cantidad: prod.cantidad,
+                        precio: prod.precio
+                    };
+                })
+            );
+
+            const { html, attachments } = confirmacionPedidoTemplate({
+                nombre: user.nombre,
+                pedidoId: nuevoPedido.id,
+                productos: productosConDetalles,
+                total,
+                direccion: direccion ? {
+                    calle: direccion.calle,
+                    numeroCasa: direccion.numeroCasa,
+                    codigoPostal: direccion.codigoPostal,
+                    ciudad: direccion.ciudad,
+                    region: direccion.region
+                } : null
+            });
+
+            sendEmail({
+                to: user.email,
+                subject: `Confirmación de pedido #${nuevoPedido.id} - NebriGame`,
+                text: `Gracias por tu compra. Hemos recibido tu pedido #${nuevoPedido.id}.`,
+                html,
+                attachments
+            }).catch(err => console.error("Error enviando email de confirmación:", err));
+
+        } catch (err) {
+            console.error("Error preparando email de confirmación:", err);
         }
 
         res.status(201).json({
