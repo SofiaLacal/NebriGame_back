@@ -3,14 +3,11 @@ USE nebrigame;
 -- ============================================
 -- INSERTS PARA USUARIOS
 -- ============================================
-INSERT INTO usuarios (nombre, apellido1, apellido2, email, contrasenna) VALUES
-('Pablo', 'Herrero', NULL, 'pablohgb@gmail.com', '$2b$10$UxoeUu2VzE0XX5xbbIl59.wkSifHzYHaRhVSruEOGJSFd7vkPv9I6'),
-('Javier', 'Monzon', NULL, 'javiermonzon@gmail.com', '$2b$10$sMUC7qYuUlzP8s7.CWltvOCR1Fw9divKdBY2p83yfWtMucMhpim3K'),
-('Sofia', 'Lacal', NULL, 'sofialacal@gmail.com', '$2b$10$GPjQakuK6C710yiSCuQShuLErpS/C73mE66TbDOMUjCZMKmT8g9Cy'),
-('Fran', 'Albiar', NULL, 'franalbiar@gmail.com', '$$2b$10$WqHT4.854T0Zv.23q5swXuOZUuPDSA7WaMDtJDwdrpoQOK9onMgzu'),
-('Juan', 'Garcia', NULL, 'juangarcia@gmail.com', '$2b$10$7vqbSyxNxXKD./q58z0RZuvDWEKkSrZmWI.5Z2Pboo19ikB1pSi4G'),
-('Pepito', 'Perez', NULL, 'pepitoperez@gmail.com', '$2b$10$juQg3PVD0aDd0u/NvpA/LO1itY/QADeX7NdHogt84q.7dw0Vy4Hny');
-
+INSERT INTO usuarios (nombre, apellido1, apellido2, email, contrasenna, admin) VALUES
+('Pablo', 'Herrero', NULL, 'pablohgb@gmail.com', '$2b$10$UxoeUu2VzE0XX5xbbIl59.wkSifHzYHaRhVSruEOGJSFd7vkPv9I6', TRUE),
+('Javier', 'Monzon', NULL, 'javiermonzon@gmail.com', '$2b$10$sMUC7qYuUlzP8s7.CWltvOCR1Fw9divKdBY2p83yfWtMucMhpim3K', TRUE),
+('Sofia', 'Lacal', NULL, 'sofialacal@gmail.com', '$2b$10$GPjQakuK6C710yiSCuQShuLErpS/C73mE66TbDOMUjCZMKmT8g9Cy', TRUE),
+('Fran', 'Albiar', NULL, 'franalbiar@gmail.com', '$2b$10$WqHT4.854T0Zv.23q5swXuOZUuPDSA7WaMDtJDwdrpoQOK9onMgzu', FALSE);
 -- ============================================
 -- INSERTS PARA PLATAFORMAS
 -- ============================================
@@ -378,8 +375,6 @@ INSERT INTO direcciones (usuario_id, calle, numero_casa, ciudad, codigo_postal, 
 (2, 'Avenida del Puerto', '12', 'Valencia', '46021', 'peninsula', '634567890'),
 (3, 'Calle Sierpes', '28', 'Sevilla', '41004', 'peninsula', '645678901'),
 (4, 'Gran Vía de Don Diego López de Haro', '66', 'Bilbao', '48011', 'peninsula', '656789012'),
-(5, 'Calle Mayor', '15', 'Zaragoza', '50001', 'peninsula', '667890123'),
-(6, 'Calle León y Castillo', '234', 'Las Palmas de Gran Canaria', '35005', 'canarias', '678901234'),
 (2, 'Calle Colón', '8', 'Valencia', '46004', 'peninsula', '689012345');
 
 -- ============================================
@@ -391,9 +386,7 @@ INSERT INTO metodo_pago (tipo, detalles, usuario_id) VALUES
 ('Tarjeta de Débito', '**** **** **** 5678 - Mastercard', 2),
 ('Transferencia Bancaria', 'ES12 3456 7890 1234 5678', 3),
 ('Tarjeta de Crédito', '**** **** **** 9012 - VISA', 4),
-('PayPal', 'ana.fernandez@email.com', 4),
-('Tarjeta de Crédito', '**** **** **** 3456 - Mastercard', 5),
-('Bizum', '612345678', 6);
+('PayPal', 'ana.fernandez@email.com', 4);
 
 -- ============================================
 -- INSERTS PARA CARRITO
@@ -406,11 +399,7 @@ INSERT INTO carrito (usuario_id, producto_id, plataforma_id, cantidad) VALUES
 (3, 2, 1, 1),   -- Carlos: Elden Ring (PS5)
 (3, 51, 0, 2),  -- Carlos: 2x Mando DualSense (merchandising)
 (4, 39, 0, 1),  -- Ana: Switch OLED (consola)
-(4, 5, 3, 1),   -- Ana: Mario Odyssey (Switch)
-(5, 8, 1, 1),   -- Luis: Minecraft (PS5)
-(5, 55, 0, 1),  -- Luis: Taza Minecraft (merchandising)
-(6, 6, 1, 1),   -- Sara: Cyberpunk (PS5)
-(6, 57, 0, 1);  -- Sara: Alfombrilla Cyberpunk (merchandising)
+(4, 5, 3, 1);   -- Ana: Mario Odyssey (Switch)
 
 -- ============================================
 -- INSERTS PARA WISHLIST
@@ -426,12 +415,8 @@ INSERT INTO wishlist (usuario_id, producto_id) VALUES
 (3, 1),   -- Carlos quiere Zelda
 (3, 39),  -- Carlos quiere Switch OLED
 (4, 2),   -- Ana quiere Elden Ring
-(4, 7),   -- Ana quiere Red Dead 2
-(5, 37),  -- Luis quiere PS5
-(5, 3),   -- Luis quiere FIFA
-(5, 42),  -- Luis quiere Steam Deck
-(6, 38),  -- Sara quiere Xbox Series X
-(6, 10);  -- Sara quiere The Witcher 3
+(4, 7);   -- Ana quiere Red Dead 2
+
 
 -- ============================================
 -- INSERTS PARA PEDIDOS
@@ -441,9 +426,8 @@ INSERT INTO pedidos (usuario_id, metodo_pago_id, total, estado, direccion_id, te
 (2, 3, 99.98, 'enviado', 3, '623456789', NULL),
 (3, 4, 109.98, 'procesando', 4, '634567890', 'Urgente'),
 (4, 5, 409.98, 'pendiente', 5, '645678901', NULL),
-(1, 2, 24.99, 'entregado', 1, '612345678', NULL),
-(5, 7, 129.97, 'enviado', 6, '656789012', 'Llamar antes de entregar'),
-(6, 8, 449.98, 'procesando', 7, '667890123', NULL);
+(1, 2, 24.99, 'entregado', 1, '612345678', NULL);
+
 
 -- ============================================
 -- INSERTS PARA PEDIDOS_PRODUCTOS
@@ -470,14 +454,3 @@ INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, 
 -- Pedido 5: 
 INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
 (5, 49, NULL, 1, 24.99, 24.99);   -- Camiseta Zelda (merchandising)
-
--- Pedido 6: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
-(6, 8, 1, 1, 29.99, 29.99),       -- Minecraft (PS5)
-(6, 55, NULL, 1, 12.99, 12.99),   -- Taza Minecraft (merchandising)
-(6, 52, NULL, 1, 9.99, 9.99);     -- Poster Elden Ring (merchandising)
-
--- Pedido 7: 
-INSERT INTO pedidos_productos (pedido_id, producto_id, plataforma_id, cantidad, precio_unitario, subtotal) VALUES
-(7, 40, NULL, 1, 449.99, 449.99), -- PS5 Digital (consola)
-(7, 6, 1, 1, 39.99, 39.99);       -- Cyberpunk 2077 (PS5)
