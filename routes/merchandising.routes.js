@@ -28,69 +28,70 @@ router.get("/", async (req, res) => {
     }
 });
 
+
 // ---------------- FILTRAR POR NOMBRE DEL JUEGO ----------------
-router.get("/juego/:nombreJuego", async (req, res) => {
-    try {
-        const nombreJuego = req.params.nombreJuego;
+// router.get("/juego/:nombreJuego", async (req, res) => {
+//     try {
+//         const nombreJuego = req.params.nombreJuego;
 
-        const merchandising = await Producto.findAll({
-            where: { 
-                tipo: 'merchandising',
-                nombre: {
-                    [Op.like]: `%${nombreJuego}%`
-                }
-            },
-            include: [{
-                model: Merchandising,
-                as: 'merchandising'
-            }]
-        });
+//         const merchandising = await Producto.findAll({
+//             where: { 
+//                 tipo: 'merchandising',
+//                 nombre: {
+//                     [Op.like]: `%${nombreJuego}%`
+//                 }
+//             },
+//             include: [{
+//                 model: Merchandising,
+//                 as: 'merchandising'
+//             }]
+//         });
 
-        res.json({
-            success: true,
-            total: merchandising.length,
-            merchandising
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al filtrar por juego",
-            error: error.message
-        });
-    }
-});
+//         res.json({
+//             success: true,
+//             total: merchandising.length,
+//             merchandising
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Error al filtrar por juego",
+//             error: error.message
+//         });
+//     }
+// });
 
 // ---------------- FILTRAR POR CATEGORÍA ----------------
-router.get("/categoria/:categoria", async (req, res) => {
-    try {
-        const categoria = req.params.categoria;
+// router.get("/categoria/:categoria", async (req, res) => {
+//     try {
+//         const categoria = req.params.categoria;
 
-        const merchandising = await Producto.findAll({
-            where: { tipo: 'merchandising' },
-            include: [{
-                model: Merchandising,
-                as: 'merchandising',
-                where: {
-                    categoria: {
-                        [Op.like]: `%${categoria}%`
-                    }
-                }
-            }]
-        });
+//         const merchandising = await Producto.findAll({
+//             where: { tipo: 'merchandising' },
+//             include: [{
+//                 model: Merchandising,
+//                 as: 'merchandising',
+//                 where: {
+//                     categoria: {
+//                         [Op.like]: `%${categoria}%`
+//                     }
+//                 }
+//             }]
+//         });
 
-        res.json({
-            success: true,
-            total: merchandising.length,
-            categoria: categoria,
-            merchandising
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al filtrar por categoría",
-            error: error.message
-        });
-    }
-});
+//         res.json({
+//             success: true,
+//             total: merchandising.length,
+//             categoria: categoria,
+//             merchandising
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Error al filtrar por categoría",
+//             error: error.message
+//         });
+//     }
+// });
 
 module.exports = router;

@@ -73,74 +73,72 @@ router.get("/:id", async (req, res) => {
 });
 
 // ---------------- FILTRAR POR PLATAFORMA ----------------
-router.get("/plataforma/:categoriaId", async (req, res) => {
-    try {
-        const categoriaId = parseInt(req.params.categoriaId);
+// router.get("/plataforma/:categoriaId", async (req, res) => {
+//     try {
+//         const categoriaId = parseInt(req.params.categoriaId);
 
-        const consolas = await Producto.findAll({
-            where: { tipo: 'consola' },
-                include: [{
-                    model: Consola,
-                    as: 'consola',  
-                where: { plataforma_id: categoriaId },
-                    include: [{
-                        model: Plataforma,
-                        as: 'plataforma' 
-                    }]
-                }]
-        });
+//         const consolas = await Producto.findAll({
+//             where: { tipo: 'consola' },
+//                 include: [{
+//                     model: Consola,
+//                     as: 'consola',  
+//                 where: { plataforma_id: categoriaId },
+//                     include: [{
+//                         model: Plataforma,
+//                         as: 'plataforma' 
+//                     }]
+//                 }]
+//         });
 
-        res.json({
-            success: true,
-            total: consolas.length,
-            consolas
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al filtrar por plataforma",
-            error: error.message
-        });
-    }
-});
+//         res.json({
+//             success: true,
+//             total: consolas.length,
+//             consolas
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Error al filtrar por plataforma",
+//             error: error.message
+//         });
+//     }
+// });
 
 // ---------------- FILTRAR POR FABRICANTE ----------------
-router.get("/fabricante/:fabricante", async (req, res) => {
-    try {
-        const fabricante = req.params.fabricante;
+// router.get("/fabricante/:fabricante", async (req, res) => {
+//     try {
+//         const fabricante = req.params.fabricante;
 
-        const consolas = await Producto.findAll({
-            where: { tipo: 'consola' },
-            include: [{
-                model: Consola,
-                as: 'consola',
-                where: {
-                    fabricante: {
-                        [Op.like]: `%${fabricante}%`
-                    }
-                },
-                include: [{
-                    model: Plataforma,
-                    as: 'plataforma'
-                }]
-            }]
-        });
+//         const consolas = await Producto.findAll({
+//             where: { tipo: 'consola' },
+//             include: [{
+//                 model: Consola,
+//                 as: 'consola',
+//                 where: {
+//                     fabricante: {
+//                         [Op.like]: `%${fabricante}%`
+//                     }
+//                 },
+//                 include: [{
+//                     model: Plataforma,
+//                     as: 'plataforma'
+//                 }]
+//             }]
+//         });
 
-        const consolasConImagenes = transformImageUrls(consolas);
-
-        res.json({
-            success: true,
-            total: consolas.length,
-            fabricante: fabricante,
-            consolas: consolasConImagenes
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al filtrar por fabricante",
-            error: error.message
-        });
-    }
-});
+//         res.json({
+//             success: true,
+//             total: consolas.length,
+//             fabricante: fabricante,
+//             consolas: consolasConImagenes
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Error al filtrar por fabricante",
+//             error: error.message
+//         });
+//     }
+// });
 
 module.exports = router;

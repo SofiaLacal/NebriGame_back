@@ -77,123 +77,117 @@ router.get("/:nombre", async (req, res) => {
 });
 
 // ---------------- FILTRAR POR GÉNERO ----------------
-router.get("/genero/:genero", async (req, res) => {
-    try {
-        const genero = req.params.genero;
+// router.get("/genero/:genero", async (req, res) => {
+//     try {
+//         const genero = req.params.genero;
 
-        const juegos = await Producto.findAll({
-            where: { tipo: 'juego' },
-            include: [{
-                model: Juego,
-                as: 'juego',
-                where: { 
-                    genero: {
-                        [Op.like]: `%${genero}%`
-                    }
-                },
-                include: [{
-                    model: Plataforma,
-                    as: 'plataformas'
-                }]
-            }]
-        });
+//         const juegos = await Producto.findAll({
+//             where: { tipo: 'juego' },
+//             include: [{
+//                 model: Juego,
+//                 as: 'juego',
+//                 where: { 
+//                     genero: {
+//                         [Op.like]: `%${genero}%`
+//                     }
+//                 },
+//                 include: [{
+//                     model: Plataforma,
+//                     as: 'plataformas'
+//                 }]
+//             }]
+//         });
 
-        const juegosConImagenes = transformImageUrls(juegos);
+//         res.json({
+//             success: true,
+//             total: juegos.length,
+//             genero: genero,
+//             videojuegos: juegosConImagenes
+//         });
 
-        res.json({
-            success: true,
-            total: juegos.length,
-            genero: genero,
-            videojuegos: juegosConImagenes
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al filtrar por género",
-            error: error.message
-        });
-    }
-});
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Error al filtrar por género",
+//             error: error.message
+//         });
+//     }
+// });
 
 // ---------------- FILTRAR POR CONSOLA (PLATAFORMA) ----------------
-router.get("/consola/:nombreConsola", async (req, res) => {
-    try {
-        const nombreConsola = req.params.nombreConsola;
+// router.get("/consola/:nombreConsola", async (req, res) => {
+//     try {
+//         const nombreConsola = req.params.nombreConsola;
 
-        const juegos = await Producto.findAll({
-            where: { tipo: 'juego' },
-            include: [{
-                model: Juego,
-                as: 'juego',
-                include: [{
-                    model: Plataforma,
-                    as: 'plataformas',
-                    where: {
-                        nombre: {
-                            [Op.like]: `%${nombreConsola}%`
-                        }
-                    }
-                }]
-            }]
-        });
+//         const juegos = await Producto.findAll({
+//             where: { tipo: 'juego' },
+//             include: [{
+//                 model: Juego,
+//                 as: 'juego',
+//                 include: [{
+//                     model: Plataforma,
+//                     as: 'plataformas',
+//                     where: {
+//                         nombre: {
+//                             [Op.like]: `%${nombreConsola}%`
+//                         }
+//                     }
+//                 }]
+//             }]
+//         });
 
-        const juegosConImagenes = transformImageUrls(juegos);
+//         res.json({
+//             success: true,
+//             total: juegos.length,
+//             consola: nombreConsola,
+//             videojuegos: juegosConImagenes
+//         });
 
-        res.json({
-            success: true,
-            total: juegos.length,
-            consola: nombreConsola,
-            videojuegos: juegosConImagenes
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al filtrar por consola",
-            error: error.message
-        });
-    }
-});
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Error al filtrar por consola",
+//             error: error.message
+//         });
+//     }
+// });
 
 // ---------------- FILTRAR POR EDAD MÍNIMA ----------------
-router.get("/edad/:edadMinima", async (req, res) => {
-    try {
-        const edadMinima = parseInt(req.params.edadMinima);
+// router.get("/edad/:edadMinima", async (req, res) => {
+//     try {
+//         const edadMinima = parseInt(req.params.edadMinima);
 
-        const juegos = await Producto.findAll({
-            where: { tipo: 'juego' },
-            include: [{
-                model: Juego,
-                as: 'juego',
-                where: {
-                    edad_minima: {
-                        [Op.lte]: edadMinima
-                    }
-                },
-                include: [{
-                    model: Plataforma,
-                    as: 'plataformas'
-                }]
-            }]
-        });
+//         const juegos = await Producto.findAll({
+//             where: { tipo: 'juego' },
+//             include: [{
+//                 model: Juego,
+//                 as: 'juego',
+//                 where: {
+//                     edad_minima: {
+//                         [Op.lte]: edadMinima
+//                     }
+//                 },
+//                 include: [{
+//                     model: Plataforma,
+//                     as: 'plataformas'
+//                 }]
+//             }]
+//         });
 
-        const juegosConImagenes = transformImageUrls(juegos);
-
-        res.json({
-            success: true,
-            total: juegos.length,
-            edadMinima: edadMinima,
-            videojuegos: juegosConImagenes
-        });
+//         res.json({
+//             success: true,
+//             total: juegos.length,
+//             edadMinima: edadMinima,
+//             videojuegos: juegosConImagenes
+//         });
         
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Error al filtrar por edad",
-            error: error.message
-        });
-    }
-});
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Error al filtrar por edad",
+//             error: error.message
+//         });
+//     }
+// });
 
 module.exports = router;
