@@ -18,7 +18,6 @@ const Wishlist = require('./Wishlist');
 const Pedido = require('./Pedido');
 const PedidoProducto = require('./PedidoProducto');
 const Direccion = require('./Direccion');
-/* const VistaProductosCompleta = require('./VistaProductosCompleta'); */
 const VistaResumenPedidos = require('./VistaResumenPedidos');
 
 
@@ -226,6 +225,5 @@ module.exports = {
   Pedido,
   PedidoProducto,
   Direccion,
-/*   VistaProductosCompleta, */
   VistaResumenPedidos
 };

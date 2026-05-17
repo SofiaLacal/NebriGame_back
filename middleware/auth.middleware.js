@@ -1,4 +1,5 @@
 const { verifyAccessToken } = require("../utils/jwt");
+const { Usuario } = require("../models");
 
 function authenticateAccessToken(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -33,4 +34,22 @@ function requireSameUser(req, res, next) {
     next();
 }
 
-module.exports = { authenticateAccessToken, requireSameUser };
+async function requireAdmin(req, res, next) {
+    try {
+        const usuario = await Usuario.findByPk(req.authUserId, {
+            attributes: ["id", "admin"],
+        });
+        if (!usuario || !usuario.admin) {
+            return res.status(403).json({ success: false, error: "No autorizado" });
+        }
+        next();
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al verificar permisos de administrador",
+            error: error.message,
+        });
+    }
+}
+
+module.exports = { authenticateAccessToken, requireSameUser, requireAdmin };

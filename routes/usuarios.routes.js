@@ -137,7 +137,8 @@ router.post("/login", async (req, res) => {
                 apellido1: usuario.apellido1,
                 apellido2: usuario.apellido2,
                 email: usuario.email,
-                fecha_registro: usuario.fecha_registro
+                fecha_registro: usuario.fecha_registro,
+                admin: !!usuario.admin,
             };
             const accessToken = signAccess(usuario.id);
             const refreshToken = signRefresh(usuario.id);
@@ -190,7 +191,8 @@ router.post("/registro", async (req, res) => {
             apellido1: nuevoUsuario.apellido1,
             apellido2: nuevoUsuario.apellido2,
             email: nuevoUsuario.email,
-            fecha_registro: nuevoUsuario.fecha_registro
+            fecha_registro: nuevoUsuario.fecha_registro,
+            admin: !!nuevoUsuario.admin,
         };
 
         const accessToken = signAccess(nuevoUsuario.id);
@@ -260,6 +262,25 @@ router.post("/refresh", async (req, res) => {
     }
 });
 
+// ---------------- ¿ES ADMIN? ----------------
+router.get("/isAdmin", authenticateAccessToken, async (req, res) => {
+    try {
+        const usuario = await Usuario.findByPk(req.authUserId, {
+            attributes: ["admin"],
+        });
+        res.json({
+            success: true,
+            isAdmin: !!(usuario && usuario.admin),
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error al comprobar administrador",
+            error: error.message,
+        });
+    }
+});
+
 // ---------------- PERFIL ----------------
 router.get("/:userId", authenticateAccessToken, requireSameUser, async (req, res) => {
     try {
@@ -279,7 +300,8 @@ router.get("/:userId", authenticateAccessToken, requireSameUser, async (req, res
             apellido1: usuario.apellido1,
             apellido2: usuario.apellido2,
             email: usuario.email,
-            fecha_registro: usuario.fecha_registro
+            fecha_registro: usuario.fecha_registro,
+            admin: !!usuario.admin,
         }
 
 
@@ -350,7 +372,8 @@ router.patch("/:userId", authenticateAccessToken, requireSameUser, async (req, r
             apellido1: usuarioActualizado.apellido1,
             apellido2: usuarioActualizado.apellido2,
             email: usuarioActualizado.email,
-            fecha_registro: usuarioActualizado.fecha_registro
+            fecha_registro: usuarioActualizado.fecha_registro,
+            admin: !!usuarioActualizado.admin,
         }
 
         res.json({

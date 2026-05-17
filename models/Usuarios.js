@@ -38,6 +38,11 @@ const Usuario = sequelize.define('Usuario', {
   fecha_registro: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
+  },
+  admin: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   tableName: 'usuarios',
