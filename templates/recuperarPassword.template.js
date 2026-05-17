@@ -5,7 +5,7 @@ const recuperarPasswordTemplate = ({ nombre, resetLink }) => {
     <!DOCTYPE html>
     <html lang="es">
     <head><meta charset="UTF-8"></head>
-    <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f4f4f4;">
+    <body style="margin:0; padding:0; font-family: Segoe UI, sans-serif; background-color:#f4f4f4;">
         <div style="max-width:600px; margin:0 auto; background:#ffffff;">
             
             <!-- Cabecera del mail -->
@@ -46,14 +46,14 @@ const recuperarPasswordTemplate = ({ nombre, resetLink }) => {
                 </div>
             </div>
 
-            <div style="background:#1a1a2e; color:#aaa; padding:20px; 
+            <!-- Footer del mail -->
+            <div style="background:#4C71FF; color:#aaa; padding:20px; 
                         text-align:center; font-size:12px;">
-                <p style="margin:0;">© 2026 NebriGame. Todos los derechos reservados.</p>
+                <p style="margin:0; color:#fff;">© 2026 NebriGame. Todos los derechos reservados.</p>
             </div>
         </div>
     </body>
-    </html>
-    `;
+    </html>`;
 
     const attachments = [
         {

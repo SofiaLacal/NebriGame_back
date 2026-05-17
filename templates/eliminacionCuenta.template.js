@@ -5,13 +5,15 @@ const eliminacionTemplate = ({ nombre, email }) => {
     <!DOCTYPE html>
     <html lang="es">
     <head><meta charset="UTF-8"></head>
-    <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f4f4f4;">
+    <body style="margin:0; padding:0; font-family: Segoe UI, sans-serif; background-color:#f4f4f4;">
         <div style="max-width:600px; margin:0 auto; background:#ffffff;">
             
+            <!-- Cabecera del mail -->
             <div style="background:#1a1a2e; padding:30px; text-align:center;">
                 <img src="cid:logo" alt="NebriGame" style="max-width:180px;">
             </div>
 
+            <!-- Cuerpo del mail -->
             <div style="padding:40px 30px; color:#333;">
                 <h1 style="color:#1a1a2e; margin-top:0;">Hasta pronto, ${nombre}</h1>
                 
@@ -22,7 +24,7 @@ const eliminacionTemplate = ({ nombre, email }) => {
                 </p>
 
                 <p style="font-size:16px; line-height:1.6;">
-                    Todos tus datos personales, pedidos, métodos de pago y direcciones
+                    Todos tus datos personales, métodos de pago y direcciones
                     han sido borrados de nuestros servidores.
                 </p>
 
@@ -50,6 +52,7 @@ const eliminacionTemplate = ({ nombre, email }) => {
                 </div>
             </div>
 
+            <!-- Footer del mail -->
             <div style="background:#1a1a2e; color:#aaa; padding:20px; 
                         text-align:center; font-size:12px;">
                 <p style="margin:0;">© 2026 NebriGame. Todos los derechos reservados.</p>

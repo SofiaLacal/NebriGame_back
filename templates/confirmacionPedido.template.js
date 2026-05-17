@@ -21,7 +21,7 @@ const confirmacionPedidoTemplate = ({ nombre, pedidoId, productos, total, direcc
     <!DOCTYPE html>
     <html lang="es">
     <head><meta charset="UTF-8"></head>
-    <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f4f4f4;">
+    <body style="margin:0; padding:0; font-family: Segoe UI, sans-serif; background-color:#f4f4f4;">
         <div style="max-width:600px; margin:0 auto; background:#ffffff;">
             
             <!-- Cabecera del mail -->
@@ -34,7 +34,7 @@ const confirmacionPedidoTemplate = ({ nombre, pedidoId, productos, total, direcc
                 <h1 style="color:#1a1a2e; margin-top:0;">¡Gracias por tu compra, ${nombre}! </h1>
                 
                 <p style="font-size:16px; line-height:1.6;">
-                    Hemos recibido tu pedido <strong>#${pedidoId}</strong> y lo estamos
+                    Hemos recibido tu pedido y lo estamos
                     preparando. Te avisaremos cuando salga rumbo a tu dirección.
                 </p>
 
@@ -44,9 +44,9 @@ const confirmacionPedidoTemplate = ({ nombre, pedidoId, productos, total, direcc
                 
                 <table style="width:100%; border-collapse:collapse; margin-top:10px;">
                     <thead>
-                        <tr style="background:#1a1a2e; color:#fff;">
+                        <tr style="background:#5B60B9; color:#fff;">
                             <th style="padding:12px; text-align:left;">Producto</th>
-                            <th style="padding:12px; text-align:center;">Cant.</th>
+                            <th style="padding:12px; text-align:center;">Cantidad</th>
                             <th style="padding:12px; text-align:right;">Subtotal</th>
                         </tr>
                     </thead>
@@ -88,14 +88,14 @@ const confirmacionPedidoTemplate = ({ nombre, pedidoId, productos, total, direcc
                 </div>
             </div>
 
-            <div style="background:#1a1a2e; color:#aaa; padding:20px; 
+            <!-- Footer del mail -->
+            <div style="background:#4C71FF; color:#aaa; padding:20px; 
                         text-align:center; font-size:12px;">
-                <p style="margin:0;">© 2026 NebriGame. Todos los derechos reservados.</p>
+                <p style="margin:0; color:#fff;">© 2026 NebriGame. Todos los derechos reservados.</p>
             </div>
         </div>
     </body>
-    </html>
-    `;
+    </html>`;
 
     const attachments = [
         {

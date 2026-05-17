@@ -280,7 +280,7 @@ router.post("/forgot-password", async (req, res) => {
         }
 
         const resetToken = signPasswordReset(usuario.id);
-        const resetLink = `${process.env.FRONTEND_URL}/restablecer-contraseña?token=${resetToken}`;
+        const resetLink = `${process.env.FRONTEND_URL}/restablecer-password?token=${resetToken}`;
 
         const { html, attachments } = recuperarPasswordTemplate({
             nombre: usuario.nombre,
@@ -290,7 +290,7 @@ router.post("/forgot-password", async (req, res) => {
         await sendEmail({
             to: usuario.email,
             subject: "Recupera tu contraseña - NebriGame",
-            text: `Hola ${usuario.nombre}, usa este enlace para recuperar tu contraseña: ${resetLink}`,
+            text: `Hola ${usuario.nombre}, hemos recibido una solicitud para restablecer la contraseña de tu cuenta.`,
             html,
             attachments
         });
@@ -920,6 +920,53 @@ router.post("/:userId/carrito/comprar", authenticateAccessToken, requireSameUser
         } catch (err) {
             await t.rollback();
             throw err;
+        }
+
+        // Enviar correo de confirmación de pedido 
+        try {
+            const user = await Usuario.findByPk(userId);
+            const direccionDb = await Direccion.findByPk(direccion_id);
+ 
+            const productosConDetalles = await Promise.all(
+                itemsCarrito.map(async (item) => {
+                    let plataformaNombre = null;
+                    if (item.producto?.tipo === 'juego' && item.plataforma_id) {
+                        const plat = await Plataforma.findByPk(item.plataforma_id);
+                        plataformaNombre = plat?.nombre || null;
+                    }
+                    return {
+                        nombre: item.producto?.nombre || "Producto",
+                        plataforma: plataformaNombre,
+                        cantidad: item.cantidad,
+                        precio: item.producto?.precio || 0
+                    };
+                })
+            );
+ 
+            const { html, attachments } = confirmacionPedidoTemplate({
+                nombre: user.nombre,
+                pedidoId: nuevoPedido.id,
+                productos: productosConDetalles,
+                total,
+                direccion: direccionDb ? {
+                    calle: direccionDb.calle,
+                    numeroCasa: direccionDb.numero_casa,
+                    codigoPostal: direccionDb.codigo_postal,
+                    ciudad: direccionDb.ciudad,
+                    region: direccionDb.region
+                } : null
+            });
+ 
+            sendEmail({
+                to: user.email,
+                subject: `Confirmación de pedido - NebriGame`,
+                text: `Gracias por tu compra. Hemos recibido tu pedido.`,
+                html,
+                attachments
+            }).catch(err => console.error("Error enviando email de confirmación:", err));
+ 
+        } catch (err) {
+            console.error("Error preparando email de confirmación:", err);
         }
 
         res.status(201).json({
