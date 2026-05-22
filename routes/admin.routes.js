@@ -107,15 +107,17 @@ router.delete("/productos/:id", async (req, res) => {
 // ---------------- CREAR VIDEOJUEGO ----------------
 router.post("/juegos", async (req, res) => {
     try {
-        const { genero, edad_minima, plataforma_id, control_stock, ...productoData } = req.body;
-
-        const pid = parseInt(plataforma_id, 10);
-        if (Number.isNaN(pid)) {
+        const plats = req.body.plataformas;
+        if (!Array.isArray(plats) || plats.length < 1 || plats.length > 10) {
             return res.status(400).json({
                 success: false,
-                error: "plataforma_id es obligatorio para crear un juego",
+                error: "plataformas debe ser un array con entre 1 y 10 elementos { plataforma_id, control_stock }",
             });
         }
+
+        const { genero, edad_minima, ...restBody } = req.body;
+        const productoData = { ...restBody };
+        delete productoData.plataformas;
 
         const t = await sequelize.transaction();
         try {
@@ -136,12 +138,12 @@ router.post("/juegos", async (req, res) => {
                 { transaction: t }
             );
 
-            await JuegoPlataforma.create(
-                {
+            await JuegoPlataforma.bulkCreate(
+                plats.map((p) => ({
                     juego_id: nuevoProducto.id,
-                    plataforma_id: pid,
-                    control_stock: control_stock ?? 0,
-                },
+                    plataforma_id: parseInt(p.plataforma_id ?? p.id, 10),
+                    control_stock: Math.max(0, Math.floor(Number(p.control_stock) || 0)),
+                })),
                 { transaction: t }
             );
 
@@ -262,15 +264,13 @@ router.put("/juegos/:productoId", async (req, res) => {
             imagen_url,
             genero,
             edad_minima,
-            plataforma_id,
-            control_stock,
         } = req.body;
 
-        const pid = parseInt(plataforma_id, 10);
-        if (Number.isNaN(pid)) {
+        const plats = req.body.plataformas;
+        if (!Array.isArray(plats) || plats.length < 1 || plats.length > 10) {
             return res.status(400).json({
                 success: false,
-                error: "plataforma_id obligatorio",
+                error: "plataformas debe ser un array con entre 1 y 10 elementos { plataforma_id, control_stock }",
             });
         }
 
@@ -300,12 +300,12 @@ router.put("/juegos/:productoId", async (req, res) => {
                 where: { juego_id: productoId },
                 transaction: t,
             });
-            await JuegoPlataforma.create(
-                {
+            await JuegoPlataforma.bulkCreate(
+                plats.map((p) => ({
                     juego_id: productoId,
-                    plataforma_id: pid,
-                    control_stock: control_stock ?? 0,
-                },
+                    plataforma_id: parseInt(p.plataforma_id ?? p.id, 10),
+                    control_stock: Math.max(0, Math.floor(Number(p.control_stock) || 0)),
+                })),
                 { transaction: t }
             );
 
@@ -575,8 +575,7 @@ router.get("/pedidos/:id", async (req, res) => {
 });
 
 // ---------------- ACTUALIZAR PEDIDO (admin) ----------------
-// Campos habituales: estado, telefono_contacto, direccion{…}, notas.
-// Ampliaciones futuras posibles: total, metodo_pago_id, líneas del pedido, etc.
+
 router.patch("/pedidos/:id", async (req, res) => {
     try {
         const id = parseInt(req.params.id, 10);
