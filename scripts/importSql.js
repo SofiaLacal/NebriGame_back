@@ -2,15 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const mysql = require("mysql2/promise");
 
-function loadSql(fileName) {
-  const sqlPath = path.join(__dirname, "..", "sql", fileName);
+function loadInserts() {
+  const sqlPath = path.join(__dirname, "..", "sql", "inserts-BD.sql");
   let sql = fs.readFileSync(sqlPath, "utf8");
-
-  // Evitar borrar/crear otra base en Railway; usamos la DB de la conexión
-  sql = sql.replace(/DROP\s+DATABASE\s+IF\s+EXISTS\s+\w+\s*;/gi, "");
-  sql = sql.replace(/CREATE\s+DATABASE\s+IF\s+NOT\s+EXISTS\s+\w+\s*;/gi, "");
   sql = sql.replace(/USE\s+\w+\s*;/gi, "");
-
   return sql.trim();
 }
 
@@ -44,17 +39,13 @@ async function main() {
     multipleStatements: true,
   });
 
-  const schema = loadSql("nebrigame-BD.sql");
-  const inserts = loadSql("inserts-BD.sql");
+  console.log("Insertando datos (sin recrear tablas)...");
+  await connection.query(loadInserts());
 
-  console.log("Creando tablas (esquema)...");
-  await connection.query(schema);
-
-  console.log("Insertando datos...");
-  await connection.query(inserts);
-
-  const [tables] = await connection.query("SHOW TABLES");
-  console.log(`Tablas en ${database}:`, tables.length);
+  const [[{ total }]] = await connection.query(
+    "SELECT COUNT(*) AS total FROM productos"
+  );
+  console.log(`Productos en BD: ${total}`);
 
   await connection.end();
   console.log("Importación completada.");
