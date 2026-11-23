@@ -1,13 +1,14 @@
 const {Sequelize} = require("sequelize");
 
-// Valores por defecto para desarrollo local si el .env está vacío o no define la clave
 const dbName = process.env.DB_NAME;
 const dbUser = process.env.DB_USER;
 const dbHost = process.env.DB_HOST;
 const dbPassword = process.env.DB_PASSWORD;
+const dbPort = Number(process.env.DB_PORT);
 
 const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
   host: dbHost,
+  port: dbPort,
   dialect: "mysql",
   logging: false,
   pool: {
