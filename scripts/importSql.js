@@ -2,14 +2,21 @@ const fs = require("fs");
 const path = require("path");
 const mysql = require("mysql2/promise");
 
+function loadSql(fileName) {
+  const sqlPath = path.join(__dirname, "..", "sql", fileName);
+  let sql = fs.readFileSync(sqlPath, "utf8");
+
+  // Evitar borrar/crear otra base en Railway; usamos la DB de la conexión
+  sql = sql.replace(/DROP\s+DATABASE\s+IF\s+EXISTS\s+\w+\s*;/gi, "");
+  sql = sql.replace(/CREATE\s+DATABASE\s+IF\s+NOT\s+EXISTS\s+\w+\s*;/gi, "");
+  sql = sql.replace(/USE\s+\w+\s*;/gi, "");
+
+  return sql.trim();
+}
+
 async function main() {
-  const host = process.env.DB_HOST || process.env.MYSQLHOST || process.env.MYSQLHOST_PUBLIC;
-  const port = Number(
-    process.env.DB_PORT ||
-      process.env.MYSQLPORT ||
-      process.env.MYSQLPORT_PUBLIC ||
-      3306
-  );
+  const host = process.env.DB_HOST || process.env.MYSQLHOST;
+  const port = Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306);
   const user = process.env.DB_USER || process.env.MYSQLUSER;
   const password = process.env.DB_PASSWORD || process.env.MYSQLPASSWORD;
   const database = process.env.DB_NAME || process.env.MYSQLDATABASE;
@@ -23,15 +30,8 @@ async function main() {
       database: database || "(vacío)",
       password: password ? "(definida)" : "(vacía)",
     });
-    console.error(
-      "\nEjecuta esto en el servicio MySQL o del back con variables cargadas."
-    );
     process.exit(1);
   }
-
-  const sqlPath = path.join(__dirname, "..", "sql", "inserts-BD.sql");
-  let sql = fs.readFileSync(sqlPath, "utf8");
-  sql = sql.replace(/^USE\s+\w+\s*;/im, "");
 
   console.log(`Conectando a ${host}:${port} / DB ${database} ...`);
 
@@ -44,8 +44,18 @@ async function main() {
     multipleStatements: true,
   });
 
-  console.log("Importando inserts-BD.sql...");
-  await connection.query(sql);
+  const schema = loadSql("nebrigame-BD.sql");
+  const inserts = loadSql("inserts-BD.sql");
+
+  console.log("Creando tablas (esquema)...");
+  await connection.query(schema);
+
+  console.log("Insertando datos...");
+  await connection.query(inserts);
+
+  const [tables] = await connection.query("SHOW TABLES");
+  console.log(`Tablas en ${database}:`, tables.length);
+
   await connection.end();
   console.log("Importación completada.");
 }
